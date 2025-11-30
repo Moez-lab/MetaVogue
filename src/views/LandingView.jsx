@@ -1,7 +1,10 @@
 import { Icon } from '../components/Icon';
 import { ModelViewer } from '../components/ModelViewer';
-import model071 from '../assets/workflow/textured-model-1764410569071.glb';
-import model152 from '../assets/workflow/textured-model-1764410686152.glb';
+import logo from '../assets/logo.png';
+import model071 from '../assets/workflow/3d human/textured-model-1764410569071.glb';
+import model152 from '../assets/workflow/3d human/textured-model-1764410686152.glb';
+import shirt2d from '../assets/workflow/clothes/2dshirt.png';
+import shirt3d from '../assets/workflow/clothes/3dshirt.glb';
 
 export const LandingView = ({ onGetStarted, onSignIn }) => {
     return (
@@ -10,9 +13,8 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
             <nav className="fixed top-0 w-full z-50 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-3 group cursor-pointer">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary via-purple-500 to-secondary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform duration-300 relative overflow-hidden">
-                            <div className="absolute inset-0 bg-white/30 animate-[shimmer_2s_infinite] skew-x-12"></div>
-                            <Icon name="Cube" size={24} className="text-white relative z-10" />
+                        <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative">
+                            <img src={logo} alt="MetaVogue Logo" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
                         </div>
                         <span className="text-xl font-bold tracking-tight">MetaVogue</span>
                     </div>
@@ -279,11 +281,11 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                         </p>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-12 mb-24">
                         {/* Step 1: Base Model */}
                         <div className="flex flex-col items-center gap-4">
                             <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative">
-                                <ModelViewer modelUrl={model152} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                                <ModelViewer url={model152} showDownload={false} cameraPosition={[0, 0, 2.5]} />
                                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                                     <span className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-xs font-bold border border-white/10">
                                         01. Base Generation
@@ -304,10 +306,45 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                         {/* Step 2: Textured Model */}
                         <div className="flex flex-col items-center gap-4">
                             <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative">
-                                <ModelViewer modelUrl={model071} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                                <ModelViewer url={model071} showDownload={false} cameraPosition={[0, 0, 2.5]} />
                                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                                     <span className="px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-xs font-bold border border-primary/30 text-white">
                                         02. Smart Texture Applied
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+                        {/* Step 1: 2D Shirt Image */}
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative flex items-center justify-center p-4">
+                                <img src={shirt2d} alt="2D Shirt" className="w-full h-full object-contain" />
+                                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                                    <span className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-xs font-bold border border-white/10">
+                                        01. 2D Design
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Arrow */}
+                        <div className="hidden md:flex flex-col items-center gap-2 text-primary animate-pulse">
+                            <Icon name="ArrowRight" size={48} />
+                            <span className="text-xs font-bold tracking-widest uppercase">AI Processing</span>
+                        </div>
+                        <div className="md:hidden text-primary animate-pulse my-4">
+                            <Icon name="ArrowDown" size={32} />
+                        </div>
+
+                        {/* Step 2: 3D Shirt Model */}
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative">
+                                <ModelViewer url={shirt3d} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                                    <span className="px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-xs font-bold border border-primary/30 text-white">
+                                        02. 3D Asset
                                     </span>
                                 </div>
                             </div>

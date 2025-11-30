@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
+import logo from '../assets/logo.png';
 
 export const LoginView = ({ onBack }) => {
     const { login } = useGlobal();
@@ -58,8 +59,8 @@ export const LoginView = ({ onBack }) => {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
-                                    <Icon name="Cube" size={20} className="text-white" />
+                                <div className="w-10 h-10 flex items-center justify-center">
+                                    <img src={logo} alt="MetaVogue Logo" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
                                 </div>
                                 <span className="font-bold text-xl tracking-wide">MetaVogue</span>
                             </div>

@@ -79,17 +79,7 @@ export const HomeView = () => {
                         </p>
                     </div>
 
-                    {/* Quick Stats / Actions */}
-                    <div className="flex gap-4">
-                        <button className="px-6 py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-xl font-bold transition-all flex items-center gap-2 group">
-                            <div className="w-4 h-4 rounded-full border-2 border-slate-400 dark:border-slate-500 group-hover:border-slate-600 dark:group-hover:border-slate-300"></div>
-                            <span className="text-slate-700 dark:text-white">Settings</span>
-                        </button>
-                        <button className="px-8 py-3 bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-900 font-black rounded-xl shadow-[0_0_20px_rgba(34,211,238,0.4)] hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] transition-all flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full border-2 border-slate-900"></div>
-                            <span>New Project</span>
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Main Content Grid */}

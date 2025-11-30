@@ -179,12 +179,12 @@ export const ModelStudioView = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <Icon name="Box" size={20} className="group-hover/btn:scale-110 transition-transform" /> Generate Model
+                                            <Icon name="Box" size={30} className="group-hover/btn:scale-100     transition-transform" /> Generate Model
                                         </>
                                     )}
                                 </button>
 
-                                <button
+                                {/* <button
                                     onClick={() => {
                                         const duckUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb";
                                         setResult(duckUrl);
@@ -195,7 +195,7 @@ export const ModelStudioView = () => {
                                     title="Test Viewer without spending tokens"
                                 >
                                     <Icon name="Eye" size={20} /> Test
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                     </div>

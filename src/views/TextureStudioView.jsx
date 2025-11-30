@@ -261,8 +261,8 @@ export const TextureStudioView = () => {
                                                 onClick={() => handleDownload('fbx')}
                                                 className="col-span-2 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all group"
                                             >
-                                                <span className="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors">
-                                                    <Icon name="Download" size={12} />
+                                                <span className="flex items-center justify-center translate-x-6 w-8 p-2 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors">
+                                                    <Icon name="Download" size={22} />
                                                 </span>
                                                 <span>Download FBX (Recommended)</span>
                                             </button>

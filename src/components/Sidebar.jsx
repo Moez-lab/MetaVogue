@@ -1,6 +1,8 @@
 import { useGlobal } from '../context/GlobalContext';
 import { Icon } from './Icon';
 
+import logo from '../assets/logo.png';
+
 export const Sidebar = () => {
     const { currentView, setCurrentView, logout, user } = useGlobal();
 
@@ -44,9 +46,9 @@ export const Sidebar = () => {
             {/* Logo Section */}
             <div className="flex items-center gap-4 mb-8 pl-2 group cursor-pointer">
                 <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform duration-500 relative z-10 border border-white/10">
-                        <Icon name="Cube" size={26} className="text-white relative z-10 animate-float" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-990 rounded-xl blur-lg opacity-15 group-hover:opacity-20 transition-opacity-10 duration-500 animate-pulse-slow"></div>
+                    <div className="w-12 h-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-500 relative z-10">
+                        <img src={logo} alt="MetaVogue Logo" className="w-full h-full object-contain " />
                     </div>
                 </div>
                 <div>

@@ -92,9 +92,7 @@ export const ModelViewer = ({ url }) => {
                 </Canvas>
             </ErrorBoundary>
 
-            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs font-mono text-white/70 pointer-events-none">
-                INTERACTIVE PREVIEW
-            </div>
+
         </div>
     );
 };
