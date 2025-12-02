@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import logo from '../assets/logo.png';
 
 export const LoginView = ({ onBack }) => {
-    const { login } = useGlobal();
+    const { login, setCurrentView } = useGlobal();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -14,6 +14,13 @@ export const LoginView = ({ onBack }) => {
         e.preventDefault();
         // Mock login - accept any credentials for now
         login({ name: name || 'User', email });
+
+        // Check for admin account
+        if (email.toLowerCase() === 'mueezzakir6@gmail.com') {
+            setCurrentView('home');
+        } else {
+            setCurrentView('brandies');
+        }
     };
 
     return (

@@ -65,6 +65,10 @@ export const Sidebar = () => {
                 <MenuItem icon="Home" label="Dashboard" id="home" active={currentView === 'home'} />
                 <MenuItem icon="Cube" label="Model Studio" id="model" active={currentView === 'model'} />
                 <MenuItem icon="Upload" label="Upload Garment" id="upload" active={currentView === 'upload'} />
+                <MenuItem icon="Clipboard" label="Work Tracking" id="work-tracking" active={currentView === 'work-tracking'} />
+                {user?.email === 'mueezzakir6@gmail.com' && (
+                    <MenuItem icon="Box" label="Orders" id="orders" active={currentView === 'orders'} />
+                )}
 
                 <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-8 mb-4">Tools</p>
                 <MenuItem icon="Video" label="Video Gen" id="video" active={currentView === 'video'} />
@@ -86,10 +90,6 @@ export const Sidebar = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-slate-700 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{user?.name || 'User'}</p>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 animate-pulse"></span>
-                                <p className="text-xs text-slate-500 dark:text-gray-400 truncate font-medium">Pro Plan</p>
-                            </div>
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
                             <button

@@ -5,7 +5,7 @@ import { ModelViewer } from '../components/ModelViewer';
 import { meshyService } from '../services/meshy';
 
 export const TextureStudioView = () => {
-    const { modelImage, setModelImage } = useGlobal();
+    const { modelImage, setModelImage, updateProjectAsset } = useGlobal();
     const [textureUrl, setTextureUrl] = useState(null);
     const [gender, setGender] = useState("Female");
     const [texturePrompt, setTexturePrompt] = useState("3D character base mesh, T-pose, realistic human skin texture, long light brown hair, smooth anatomy, non-explicit, anatomical study model, 4k texture, unreal engine style, photorealistic face");
@@ -110,6 +110,10 @@ export const TextureStudioView = () => {
                             console.log("Retexture complete, new model:", status.model_urls.glb);
                             // Update global context to show the new textured model
                             setModelImage(status.model_urls.glb);
+
+                            // Update Active Project
+                            updateProjectAsset('texture', status.model_urls.glb, texturePrompt);
+
                             setTextureUrl(null); // Clear any overlay
                         } else if (status.status === 'FAILED') {
                             clearInterval(interval);

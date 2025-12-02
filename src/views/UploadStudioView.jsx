@@ -19,7 +19,7 @@ const dataURLtoFile = (dataurl, filename) => {
 };
 
 export const UploadStudioView = () => {
-    const { setShirtImage } = useGlobal();
+    const { setShirtImage, updateProjectAsset } = useGlobal();
     const [image, setImage] = useState(null);
     const [scanning, setScanning] = useState(false);
     const [taskId, setTaskId] = useState(null);
@@ -36,6 +36,10 @@ export const UploadStudioView = () => {
                 setScanning(false);
                 setResult(task);
                 setProgress(100);
+
+                // Update Active Project
+                updateProjectAsset('garment', task.model_urls.glb, 'Uploaded Garment');
+
             } else if (task.status === 'FAILED') {
                 setScanning(false);
                 setError(task.message || 'Generation failed');

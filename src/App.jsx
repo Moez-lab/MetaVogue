@@ -8,8 +8,11 @@ import { ModelStudioView } from './views/ModelStudioView';
 import { UploadStudioView } from './views/UploadStudioView';
 import { VideoStudioView } from './views/VideoStudioView';
 import { TextureStudioView } from './views/TextureStudioView';
+import { WorkTrackingView } from './views/WorkTrackingView';
 import { LoginView } from './views/LoginView';
 import { LandingView } from './views/LandingView';
+import { BrandiesView } from './views/BrandiesView';
+import { OrdersView } from './views/OrdersView';
 
 const App = () => {
   const { currentView, isAuthenticated } = useGlobal();
@@ -22,6 +25,9 @@ const App = () => {
       case 'upload': return <UploadStudioView />;
       case 'video': return <VideoStudioView />;
       case 'texture': return <TextureStudioView />;
+      case 'work-tracking': return <WorkTrackingView />;
+      case 'brandies': return <BrandiesView />;
+      case 'orders': return <OrdersView />;
       default: return <HomeView />;
     }
   };
@@ -31,6 +37,11 @@ const App = () => {
       return <LoginView onBack={() => setShowLogin(false)} />;
     }
     return <LandingView onGetStarted={() => setShowLogin(true)} onSignIn={() => setShowLogin(true)} />;
+  }
+
+  // Special layout for Brandies View (No Sidebar/TopBar)
+  if (currentView === 'brandies') {
+    return <BrandiesView />;
   }
 
   return (

@@ -1,0 +1,259 @@
+import { useState } from 'react';
+import { useGlobal } from '../context/GlobalContext';
+import { Icon } from '../components/Icon';
+import { UploadZone } from '../components/UploadZone';
+
+export const BrandiesView = () => {
+    const { addOrder, user } = useGlobal();
+    const [modelDescription, setModelDescription] = useState('');
+    const [shirtImage, setShirtImage] = useState(null);
+    const [submitted, setSubmitted] = useState(false);
+    const [showPromptGuide, setShowPromptGuide] = useState(false);
+
+    const handleFileSelect = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setShirtImage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        addOrder({
+            modelDescription,
+            shirtImage,
+            brandEmail: user?.email || 'Unknown',
+            brandName: user?.name || 'Brand'
+        });
+
+        setSubmitted(true);
+    };
+
+    const handleReset = () => {
+        setModelDescription('');
+        setShirtImage(null);
+        setSubmitted(false);
+    };
+
+    return (
+        <div className="min-h-screen w-full relative bg-[#050b14] overflow-y-auto font-sans text-white selection:bg-purple-500/30">
+            {/* Background Pattern */}
+            <div className="fixed inset-0 opacity-20 pointer-events-none"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-opacity='0' stroke='%239333ea' stroke-width='1'/%3E%3C/svg%3E")`,
+                    backgroundSize: '60px 60px'
+                }}
+            ></div>
+
+            {/* Ambient Glows */}
+            <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[150px] animate-pulse-slow pointer-events-none"></div>
+            <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-600/20 rounded-full blur-[150px] animate-pulse-slow pointer-events-none" style={{ animationDelay: '2s' }}></div>
+
+            <div className="relative z-10 p-8 max-w-7xl mx-auto flex flex-col min-h-screen">
+
+                {/* Hero Section */}
+                <div className="text-center py-16 animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-bold tracking-wider uppercase mb-6 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                        Enterprise Solution
+                    </div>
+                    <h1 className="text-6xl md:text-7xl font-black tracking-tighter mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-purple-400 drop-shadow-2xl">
+                        Meta <span className="text-purple-500">Vogue</span>
+                    </h1>
+                    <p className="text-gray-400 text-xl max-w-2xl mx-auto leading-relaxed">
+                        Transform your physical apparel into hyper-realistic digital assets.
+                        We combine <span className="text-white font-bold">AI generation</span> with <span className="text-white font-bold">physics simulation</span> to create marketing-ready visuals.
+                    </p>
+                </div>
+
+                {/* Features Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                    {[
+                        { icon: 'Sparkles', title: 'AI Model Generation', desc: 'Custom human models tailored to your target demographic (Age, Ethnicity, Style).' },
+                        { icon: 'Shirt', title: 'Virtual Fitting', desc: 'Advanced cloth simulation ensuring your garment drapes naturally on the model.' },
+                        { icon: 'Video', title: '4K Studio Renders', desc: 'High-resolution marketing assets with professional studio lighting setups.' }
+                    ].map((feature, i) => (
+                        <div key={i} className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all duration-300 group">
+                            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 mb-4 group-hover:scale-110 transition-transform">
+                                <Icon name={feature.icon} size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                            <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Main Interaction Area */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+
+                    {/* Left Column: Form */}
+                    <div className="lg:col-span-7">
+                        <div className="bg-[#111827]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500"></div>
+
+                            {!submitted ? (
+                                <form onSubmit={handleSubmit} className="space-y-8">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <label className="text-lg font-bold text-white flex items-center gap-2">
+                                                <Icon name="User" size={20} className="text-purple-400" />
+                                                Model Specification
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPromptGuide(!showPromptGuide)}
+                                                className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 font-bold uppercase tracking-wider transition-colors"
+                                            >
+                                                <Icon name="Info" size={14} />
+                                                {showPromptGuide ? 'Hide Guide' : 'Prompt Guide'}
+                                            </button>
+                                        </div>
+
+                                        {/* Prompt Guide Accordion */}
+                                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showPromptGuide ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0'}`}>
+                                            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 text-sm text-gray-300">
+                                                <p className="font-bold text-purple-300 mb-2">Tips for a perfect result:</p>
+                                                <ul className="list-disc pl-5 space-y-1 mb-3 text-gray-400">
+                                                    <li><strong>Demographics:</strong> Age, Gender, Ethnicity (e.g., "Asian female, mid-20s")</li>
+                                                    <li><strong>Style:</strong> Hair style, makeup, vibe (e.g., "Short bob, natural makeup, street style")</li>
+                                                    <li><strong>Pose:</strong> Action or stance (e.g., "Walking forward, hands in pockets")</li>
+                                                    <li><strong>Lighting:</strong> Mood (e.g., "Golden hour, studio softbox, neon city")</li>
+                                                </ul>
+                                                <div className="bg-black/30 p-2 rounded-lg border border-white/5">
+                                                    <span className="text-purple-400 font-bold text-xs">EXAMPLE:</span>
+                                                    <p className="italic text-gray-400 text-xs mt-1">"Professional studio shot of a 30-year-old Scandinavian man with a beard, standing confidently against a grey background, soft cinematic lighting."</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <textarea
+                                            value={modelDescription}
+                                            onChange={(e) => setModelDescription(e.target.value)}
+                                            placeholder="Describe your ideal model here..."
+                                            className="w-full h-40 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none text-base leading-relaxed"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-lg font-bold text-white flex items-center gap-2 mb-3">
+                                            <Icon name="UploadCloud" size={20} className="text-purple-400" />
+                                            Apparel Upload
+                                        </label>
+                                        <p className="text-sm text-gray-500 mb-4">Upload a high-resolution flat lay or ghost mannequin image of your garment.</p>
+
+                                        {shirtImage ? (
+                                            <div className="relative h-64 rounded-xl overflow-hidden border border-purple-500/50 group bg-black/40">
+                                                <img src={shirtImage} alt="Uploaded Shirt" className="w-full h-full object-contain p-4" />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShirtImage(null)}
+                                                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold flex items-center gap-2 transition-transform hover:scale-105"
+                                                    >
+                                                        <Icon name="Trash" size={16} /> Remove Image
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <UploadZone onFileSelect={handleFileSelect} />
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={!modelDescription || !shirtImage}
+                                        className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
+                                    >
+                                        Submit Order
+                                    </button>
+                                </form>
+                            ) : (
+                                <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-8 animate-fade-in-up">
+                                    <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6 text-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                                        <Icon name="CheckCircle" size={48} />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-white mb-2">Request Submitted!</h3>
+                                    <p className="text-gray-400 mb-8 max-w-md">
+                                        Our AI is now processing your request. You will receive an email notification when your assets are ready for review.
+                                    </p>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 w-full max-w-md mb-8">
+                                        <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Estimated Deliverables</h4>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-500">3D Asset (.glb)</span>
+                                                <span className="text-green-400 font-mono">Processing...</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-500">4K Renders (.png)</span>
+                                                <span className="text-gray-600 font-mono">Pending</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleReset}
+                                        className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors border border-white/10"
+                                    >
+                                        Submit Another Request
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Info & Preview */}
+                    <div className="lg:col-span-5 space-y-6">
+                        {/* Process Card */}
+                        <div className="bg-gradient-to-br from-purple-900/40 to-black/40 backdrop-blur-xl p-8 rounded-3xl border border-purple-500/20">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <Icon name="Clipboard" className="text-purple-400" />
+                                The Process
+                            </h3>
+                            <div className="relative space-y-8">
+                                {/* Vertical Line */}
+                                <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-purple-500/20"></div>
+
+                                {[
+                                    { step: '1', title: 'Upload & Describe', desc: 'Provide your garment image and describe the target model.' },
+                                    { step: '2', title: 'AI Generation', desc: 'Our system generates the human model and simulates the cloth physics.' },
+                                    { step: '3', title: 'Quality Check', desc: 'Automated lighting and texture optimization.' },
+                                    { step: '4', title: 'Delivery', desc: 'Download your 3D assets and high-res marketing images.' }
+                                ].map((item, i) => (
+                                    <div key={i} className="relative flex gap-4">
+                                        <div className="w-7 h-7 rounded-full bg-[#050b14] border-2 border-purple-500 flex items-center justify-center text-xs font-bold text-purple-400 shrink-0 z-10">
+                                            {item.step}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-white text-sm">{item.title}</h4>
+                                            <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Help Card */}
+                        <div className="bg-blue-900/20 backdrop-blur-xl p-6 rounded-3xl border border-blue-500/20">
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-blue-500/20 rounded-xl text-blue-400">
+                                    <Icon name="Info" size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white mb-1">Need Assistance?</h4>
+                                    <p className="text-sm text-gray-400 mb-3">
+                                        Our support team is available 24/7 to help you with complex requests.
+                                    </p>
+                                    <button className="text-blue-400 text-sm font-bold hover:text-blue-300 transition-colors">
+                                        Contact Support →
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};

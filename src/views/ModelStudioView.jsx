@@ -6,7 +6,7 @@ import { meshyService } from '../services/meshy';
 import { ModelViewer } from '../components/ModelViewer';
 
 export const ModelStudioView = () => {
-    const { setModelImage } = useGlobal();
+    const { setModelImage, updateProjectAsset } = useGlobal();
     const [prompt, setPrompt] = useState("3D character base mesh, T-pose, realistic human skin texture, long light brown hair, smooth anatomy, non-explicit, anatomical study model, 4k texture, unreal engine style, photorealistic face");
     const [generating, setGenerating] = useState(false);
     const [enhancing, setEnhancing] = useState(false);
@@ -51,6 +51,10 @@ export const ModelStudioView = () => {
                         console.log("Generation Succeeded:", task.model_urls.glb); // Debug Log
                         setResult(task.model_urls.glb);
                         setModelImage(task.model_urls.glb); // Update global context
+
+                        // Update Active Project
+                        updateProjectAsset('model', task.model_urls.glb, prompt);
+
                         setGenerating(false);
                         setTaskId(null);
                         clearInterval(interval);

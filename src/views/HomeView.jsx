@@ -1,8 +1,29 @@
+import { useState } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
 
 export const HomeView = () => {
-    const { modelImage, shirtImage, setCurrentView } = useGlobal();
+    const { modelImage, shirtImage, setCurrentView, activeProject, createProject, cancelProject } = useGlobal();
+    const [showProjectModal, setShowProjectModal] = useState(false);
+    const [newProjectData, setNewProjectData] = useState({
+        title: '',
+        company: '',
+        description: ''
+    });
+
+    const handleCreateProject = (e) => {
+        e.preventDefault();
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const id = `PRJ-${timestamp}-${random}`;
+
+        createProject({
+            id,
+            ...newProjectData
+        });
+        setShowProjectModal(false);
+        setNewProjectData({ title: '', company: '', description: '' });
+    };
 
     const WorkflowStep = ({ step, title, desc, status, action, onClick }) => (
         <div className={`p-6 rounded-2xl transition-all duration-500 flex items-center gap-5 relative overflow-hidden group border
@@ -94,37 +115,130 @@ export const HomeView = () => {
                         </div>
 
                         <div className="space-y-4">
-                            <WorkflowStep
-                                step="01"
-                                title="Generate 3D Model"
-                                desc="Base mesh generation from prompt"
-                                status="done"
-                            />
-                            <WorkflowStep
-                                step="02"
-                                title="Texture Synthesis"
-                                desc="AI-driven fabric mapping & material generation"
-                                status="current"
-                                action="Processing..."
-                                onClick={() => setCurrentView('texture')}
-                            />
-                            <WorkflowStep
-                                step="03"
-                                title="Virtual Try-On"
-                                desc="Avatar fitting and physics simulation"
-                                status="pending"
-                            />
-                            <WorkflowStep
-                                step="04"
-                                title="Cinematic Render"
-                                desc="4K video generation with ray-tracing"
-                                status="pending"
-                            />
+                            {activeProject ? (
+                                <>
+                                    <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl mb-4 relative group">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h4 className="font-bold text-cyan-600 dark:text-cyan-400">{activeProject.title}</h4>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">{activeProject.company} • {activeProject.id}</p>
+                                                <p className="text-[10px] text-slate-400 mt-1">Started: {new Date(activeProject.date).toLocaleString()}</p>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <span className="px-2 py-1 bg-cyan-500 text-white text-[10px] font-bold rounded-md uppercase">Active</span>
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => setShowProjectModal(true)}
+                                                        className="p-1.5 bg-slate-200 dark:bg-white/10 hover:bg-cyan-500 hover:text-white rounded-lg transition-colors text-slate-500 dark:text-slate-400"
+                                                        title="Start New Project"
+                                                    >
+                                                        <Icon name="Sparkles" size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={cancelProject}
+                                                        className="p-1.5 bg-slate-200 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors text-slate-500 dark:text-slate-400"
+                                                        title="Cancel Project"
+                                                    >
+                                                        <Icon name="X" size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <WorkflowStep
+                                        step="01"
+                                        title="Project Created"
+                                        desc="Initial setup complete"
+                                        status="done"
+                                    />
+                                    <WorkflowStep
+                                        step="02"
+                                        title="Generate 3D Model"
+                                        desc="Base mesh generation from prompt"
+                                        status={activeProject.steps.model === 'done' ? 'done' : 'current'}
+                                        action={activeProject.steps.model === 'done' ? 'View' : 'Start'}
+                                        onClick={() => setCurrentView('model')}
+                                    />
+                                    <WorkflowStep
+                                        step="03"
+                                        title="Texture Synthesis"
+                                        desc="AI-driven fabric mapping"
+                                        status={activeProject.steps.model === 'done' ? (activeProject.steps.texture === 'done' ? 'done' : 'current') : 'pending'}
+                                        action={activeProject.steps.texture === 'done' ? 'View' : 'Start'}
+                                        onClick={() => setCurrentView('texture')}
+                                    />
+                                    <WorkflowStep
+                                        step="04"
+                                        title="Upload Garment"
+                                        desc="Image to 3D Shirt"
+                                        status={activeProject.steps.texture === 'done' ? (activeProject.steps.garment === 'done' ? 'done' : 'current') : 'pending'}
+                                        action={activeProject.steps.garment === 'done' ? 'View' : 'Start'}
+                                        onClick={() => setCurrentView('upload')}
+                                    />
+                                </>
+                            ) : (
+                                <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+                                    <p className="text-slate-500 dark:text-slate-400 mb-4">No active project</p>
+                                    <button
+                                        onClick={() => setShowProjectModal(true)}
+                                        className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/20 transition-all"
+                                    >
+                                        Create New Project
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Right Column: Visuals & Stats */}
                     <div className="space-y-8">
+                        {/* Create Project Card (if no active project) */}
+                        {!activeProject && (
+                            <div
+                                onClick={() => setShowProjectModal(true)}
+                                className="group relative overflow-hidden rounded-3xl p-6 cursor-pointer transition-all duration-500 hover:scale-[1.02] border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)] mb-6"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-green-600/20 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
+
+                                <div className="relative z-10 flex items-center justify-between">
+                                    <div>
+                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-500">
+                                            <Icon name="Sparkles" className="text-white" size={24} />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1">New Project</h3>
+                                        <p className="text-sm text-slate-500 dark:text-emerald-200 font-medium">Start a new workflow</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full border border-emerald-500/30 flex items-center justify-center group-hover:bg-emerald-500 group-hover:border-transparent transition-all duration-300">
+                                        <Icon name="ArrowRight" className="text-emerald-500 group-hover:text-white" size={20} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Project Tracking Card */}
+                        <div
+                            onClick={() => setCurrentView('work-tracking')}
+                            className="group relative overflow-hidden rounded-3xl p-6 cursor-pointer transition-all duration-500 hover:scale-[1.02] border border-cyan-500/30 shadow-[0_0_30px_rgba(34,211,238,0.15)]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
+
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div>
+                                    <div className="w-12 h-12 rounded-2xl bg-cyan-500 flex items-center justify-center mb-4 shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform duration-500">
+                                        <Icon name="Clipboard" className="text-white" size={24} />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1">Project Tracker</h3>
+                                    <p className="text-sm text-slate-500 dark:text-cyan-200 font-medium">Manage & Track Work</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full border border-cyan-500/30 flex items-center justify-center group-hover:bg-cyan-500 group-hover:border-transparent transition-all duration-300">
+                                    <Icon name="ArrowRight" className="text-cyan-500 group-hover:text-white" size={20} />
+                                </div>
+                            </div>
+                        </div>
+
                         <h3 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-white">
                             <Icon name="Activity" className="text-emerald-600 dark:text-emerald-400" />
                             System Visuals
@@ -177,6 +291,64 @@ export const HomeView = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Project Creation Modal */}
+            {showProjectModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#111827] w-full max-w-md rounded-3xl p-8 border border-slate-200 dark:border-white/10 shadow-2xl relative">
+                        <button
+                            onClick={() => setShowProjectModal(false)}
+                            className="absolute right-4 top-4 p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <Icon name="X" size={20} className="text-slate-500" />
+                        </button>
+
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Start New Project</h3>
+                        <p className="text-slate-500 dark:text-gray-400 mb-6">Initialize a new workflow session.</p>
+
+                        <form onSubmit={handleCreateProject} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">Project Title</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={newProjectData.title}
+                                    onChange={e => setNewProjectData({ ...newProjectData, title: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                                    placeholder="e.g. Summer Collection"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">Company Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={newProjectData.company}
+                                    onChange={e => setNewProjectData({ ...newProjectData, company: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                                    placeholder="e.g. MetaVogue"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">Description (Optional)</label>
+                                <textarea
+                                    value={newProjectData.description}
+                                    onChange={e => setNewProjectData({ ...newProjectData, description: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none h-24 resize-none"
+                                    placeholder="Brief details..."
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all mt-4"
+                            >
+                                Create & Start
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

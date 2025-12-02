@@ -13,6 +13,8 @@
     "@gradio/client": "^2.0.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "three": "^0.181.2"

@@ -2,7 +2,7 @@ import { useGlobal } from '../context/GlobalContext';
 import { Icon } from './Icon';
 
 export const TopBar = () => {
-    const { theme, toggleTheme } = useGlobal();
+    const { theme, toggleTheme, unreadNotifications, setCurrentView } = useGlobal();
 
     return (
         <div className="h-20 flex items-center justify-between px-8 transition-colors duration-500 sticky top-0 z-40">
@@ -21,18 +21,38 @@ export const TopBar = () => {
                 <span className="text-xs font-mono text-slate-400 dark:text-slate-500">v2.4.0</span>
             </div>
 
-            {/* Theme Toggle */}
-            <button
-                onClick={toggleTheme}
-                className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all duration-300 group relative overflow-hidden"
-            >
-                <div className="relative z-10 text-slate-600 dark:text-yellow-400 transition-transform duration-500 rotate-0 dark:rotate-180">
-                    {theme === 'dark' ? <Icon name="Sun" size={20} /> : <Icon name="Moon" size={20} />}
-                </div>
+            {/* Actions Group */}
+            <div className="flex items-center gap-4">
+                {/* Notification Bell */}
+                <button
+                    onClick={() => setCurrentView('orders')}
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all duration-300 group relative"
+                >
+                    <div className="relative z-10 text-slate-600 dark:text-slate-300 group-hover:text-cyan-400 transition-colors">
+                        <Icon name="Bell" size={20} />
+                    </div>
 
-                {/* Hover Glow */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
+                    {unreadNotifications > 0 && (
+                        <span className="absolute top-0 right-0 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                    )}
+                </button>
+
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggleTheme}
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all duration-300 group relative overflow-hidden"
+                >
+                    <div className="relative z-10 text-slate-600 dark:text-yellow-400 transition-transform duration-500 rotate-0 dark:rotate-180">
+                        {theme === 'dark' ? <Icon name="Sun" size={20} /> : <Icon name="Moon" size={20} />}
+                    </div>
+
+                    {/* Hover Glow */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+            </div>
         </div>
     );
 };
