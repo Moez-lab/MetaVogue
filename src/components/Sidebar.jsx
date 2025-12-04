@@ -69,6 +69,9 @@ export const Sidebar = () => {
                 {user?.email === 'mueezzakir6@gmail.com' && (
                     <MenuItem icon="Box" label="Orders" id="orders" active={currentView === 'orders'} />
                 )}
+                {user?.isAdmin && (
+                    <MenuItem icon="Users" label="User Management" id="admin-users" active={currentView === 'admin-users'} />
+                )}
 
                 <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-8 mb-4">Tools</p>
                 <MenuItem icon="Video" label="Video Gen" id="video" active={currentView === 'video'} />

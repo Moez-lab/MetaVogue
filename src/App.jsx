@@ -13,6 +13,7 @@ import { LoginView } from './views/LoginView';
 import { LandingView } from './views/LandingView';
 import { BrandiesView } from './views/BrandiesView';
 import { OrdersView } from './views/OrdersView';
+import { AdminUsersView } from './views/AdminUsersView';
 
 const App = () => {
   const { currentView, isAuthenticated } = useGlobal();
@@ -28,6 +29,7 @@ const App = () => {
       case 'work-tracking': return <WorkTrackingView />;
       case 'brandies': return <BrandiesView />;
       case 'orders': return <OrdersView />;
+      case 'admin-users': return <AdminUsersView />;
       default: return <HomeView />;
     }
   };

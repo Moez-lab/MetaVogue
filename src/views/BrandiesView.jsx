@@ -5,10 +5,18 @@ import { UploadZone } from '../components/UploadZone';
 
 export const BrandiesView = () => {
     const { addOrder, user } = useGlobal();
+    const [brandName, setBrandName] = useState('');
     const [modelDescription, setModelDescription] = useState('');
     const [shirtImage, setShirtImage] = useState(null);
-    const [submitted, setSubmitted] = useState(false);
     const [showPromptGuide, setShowPromptGuide] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+
+    // Payment State
+    const [cardNumber, setCardNumber] = useState('');
+    const [expiry, setExpiry] = useState('');
+    const [cvc, setCvc] = useState('');
+    const [name, setName] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleFileSelect = (file) => {
         const reader = new FileReader();
@@ -18,22 +26,49 @@ export const BrandiesView = () => {
         reader.readAsDataURL(file);
     };
 
-    const handleSubmit = (e) => {
+    const formatCardNumber = (value) => {
+        const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        const matches = v.match(/\d{4,16}/g);
+        const match = matches && matches[0] || '';
+        const parts = [];
+        for (let i = 0, len = match.length; i < len; i += 4) {
+            parts.push(match.substring(i, i + 4));
+        }
+        if (parts.length) {
+            return parts.join(' ');
+        } else {
+            return value;
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsProcessing(true);
+
+        // Simulate payment processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         addOrder({
             modelDescription,
             shirtImage,
             brandEmail: user?.email || 'Unknown',
-            brandName: user?.name || 'Brand'
+            brandName: brandName || user?.name || 'Brand',
+            paymentStatus: 'Paid',
+            amount: 49.00
         });
 
+        setIsProcessing(false);
         setSubmitted(true);
     };
 
     const handleReset = () => {
+        setBrandName('');
         setModelDescription('');
         setShirtImage(null);
+        setCardNumber('');
+        setExpiry('');
+        setCvc('');
+        setName('');
         setSubmitted(false);
     };
 
@@ -95,6 +130,21 @@ export const BrandiesView = () => {
 
                             {!submitted ? (
                                 <form onSubmit={handleSubmit} className="space-y-8">
+                                    <div>
+                                        <label className="text-lg font-bold text-white flex items-center gap-2 mb-3">
+                                            <Icon name="User" size={20} className="text-purple-400" />
+                                            Brand Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={brandName}
+                                            onChange={(e) => setBrandName(e.target.value)}
+                                            placeholder="Enter your brand name..."
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-base"
+                                            required
+                                        />
+                                    </div>
+
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
                                             <label className="text-lg font-bold text-white flex items-center gap-2">
@@ -162,12 +212,91 @@ export const BrandiesView = () => {
                                         )}
                                     </div>
 
+                                    {/* Payment Section */}
+                                    <div className="pt-8 border-t border-white/10">
+                                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                            <Icon name="CreditCard" className="text-purple-400" />
+                                            Payment Details
+                                        </h3>
+
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className="block text-sm font-bold text-gray-300 mb-2">Cardholder Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={name}
+                                                    onChange={(e) => setName(e.target.value)}
+                                                    placeholder="John Doe"
+                                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-bold text-gray-300 mb-2">Card Number</label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        value={cardNumber}
+                                                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                                                        placeholder="0000 0000 0000 0000"
+                                                        maxLength="19"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all pl-12"
+                                                        required
+                                                    />
+                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                                                        <Icon name="CreditCard" size={20} />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-bold text-gray-300 mb-2">Expiry Date</label>
+                                                    <input
+                                                        type="text"
+                                                        value={expiry}
+                                                        onChange={(e) => setExpiry(e.target.value)}
+                                                        placeholder="MM/YY"
+                                                        maxLength="5"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-center"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold text-gray-300 mb-2">CVC</label>
+                                                    <input
+                                                        type="text"
+                                                        value={cvc}
+                                                        onChange={(e) => setCvc(e.target.value)}
+                                                        placeholder="123"
+                                                        maxLength="3"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-center"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Order Summary */}
+
                                     <button
                                         type="submit"
-                                        disabled={!modelDescription || !shirtImage}
-                                        className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
+                                        disabled={!brandName || !modelDescription || !shirtImage || !cardNumber || !expiry || !cvc || !name || isProcessing}
+                                        className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                                     >
-                                        Submit Order
+                                        {isProcessing ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                Processing Payment...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Icon name="Lock" size={18} />
+                                                Pay & Submit Order
+                                            </>
+                                        )}
                                     </button>
                                 </form>
                             ) : (
@@ -175,23 +304,11 @@ export const BrandiesView = () => {
                                     <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6 text-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
                                         <Icon name="CheckCircle" size={48} />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white mb-2">Request Submitted!</h3>
+                                    <h3 className="text-3xl font-black text-white mb-2">Order Confirmed!</h3>
                                     <p className="text-gray-400 mb-8 max-w-md">
-                                        Our AI is now processing your request. You will receive an email notification when your assets are ready for review.
+                                        Payment successful. Our AI is now processing your request. You will receive an email notification when your assets are ready for review.
                                     </p>
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 w-full max-w-md mb-8">
-                                        <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Estimated Deliverables</h4>
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-gray-500">3D Asset (.glb)</span>
-                                                <span className="text-green-400 font-mono">Processing...</span>
-                                            </div>
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-gray-500">4K Renders (.png)</span>
-                                                <span className="text-gray-600 font-mono">Pending</span>
-                                            </div>
-                                        </div>
-                                    </div>
+
                                     <button
                                         onClick={handleReset}
                                         className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors border border-white/10"

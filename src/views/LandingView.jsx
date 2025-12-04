@@ -71,10 +71,7 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                                 >
                                     Start Creating <Icon name="ArrowRight" size={20} />
                                 </button>
-                                <div className="flex items-center gap-4 text-sm font-medium text-slate-400 px-4">
-                                    <span className="flex items-center gap-2"><Icon name="Check" size={16} className="text-green-400" /> No credit card</span>
-                                    <span className="flex items-center gap-2"><Icon name="Check" size={16} className="text-green-400" /> 7-day free trial</span>
-                                </div>
+
                             </div>
                         </div>
 

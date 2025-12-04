@@ -15,8 +15,16 @@ export const LoginView = ({ onBack }) => {
         // Mock login - accept any credentials for now
         login({ name: name || 'User', email });
 
-        // Check for admin account
-        if (email.toLowerCase() === 'mueezzakir6@gmail.com') {
+        // Navigation is now handled in useEffect or we can check the user object immediately if it was synchronous, 
+        // but since state updates are async, we might need to rely on the updated user state or just check the email directly here for the redirect logic.
+        // However, the context's login function updates the state. 
+        // Let's check the email directly for the immediate redirect decision to be snappy.
+
+        // Re-check admin logic to match context
+        const isAdmin = email.toLowerCase() === 'mueezzakir6@gmail.com' ||
+            (JSON.parse(localStorage.getItem('app_users') || '[]').find(u => u.email.toLowerCase() === email.toLowerCase())?.isAdmin);
+
+        if (isAdmin) {
             setCurrentView('home');
         } else {
             setCurrentView('brandies');

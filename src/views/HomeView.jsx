@@ -3,7 +3,7 @@ import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
 
 export const HomeView = () => {
-    const { modelImage, shirtImage, setCurrentView, activeProject, createProject, cancelProject } = useGlobal();
+    const { modelImage, shirtImage, setCurrentView, activeProject, createProject, cancelProject, user } = useGlobal();
     const [showProjectModal, setShowProjectModal] = useState(false);
     const [newProjectData, setNewProjectData] = useState({
         title: '',

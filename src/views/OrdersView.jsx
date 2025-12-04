@@ -1,13 +1,34 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
 
 export const OrdersView = () => {
-    const { orders, updateOrderStatus, markNotificationsAsRead } = useGlobal();
+    const { orders, updateOrderStatus, markNotificationsAsRead, deleteOrder } = useGlobal();
+    const [showAcceptModal, setShowAcceptModal] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [estimatedDate, setEstimatedDate] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         markNotificationsAsRead();
     }, []);
+
+    const handleOpenAcceptModal = (orderId, currentDate = null) => {
+        setSelectedOrderId(orderId);
+        setEstimatedDate(currentDate || new Date().toISOString().split('T')[0]);
+        setIsEditing(!!currentDate);
+        setShowAcceptModal(true);
+    };
+
+    const handleConfirmAccept = () => {
+        if (selectedOrderId && estimatedDate) {
+            updateOrderStatus(selectedOrderId, 'Accepted', { estimatedCompletionDate: estimatedDate });
+            setShowAcceptModal(false);
+            setSelectedOrderId(null);
+            setEstimatedDate('');
+            setIsEditing(false);
+        }
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -97,6 +118,27 @@ export const OrdersView = () => {
                                                         {order.brandEmail}
                                                     </span>
                                                 )}
+                                                {order.status === 'Accepted' && order.estimatedCompletionDate && (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="flex items-center gap-1 text-blue-400">
+                                                            <Icon name="Calendar" size={12} />
+                                                            Est: {order.estimatedCompletionDate}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleOpenAcceptModal(order.id, order.estimatedCompletionDate)}
+                                                            className="p-1 hover:bg-white/10 rounded text-gray-500 hover:text-white transition-colors"
+                                                            title="Edit Date"
+                                                        >
+                                                            <Icon name="Edit" size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {order.status === 'Completed' && (
+                                                    <span className="flex items-center gap-1 text-green-500">
+                                                        <Icon name="CheckCircle" size={12} />
+                                                        Completed
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
 
@@ -105,7 +147,7 @@ export const OrdersView = () => {
                                             {order.status === 'Pending' && (
                                                 <>
                                                     <button
-                                                        onClick={() => updateOrderStatus(order.id, 'Accepted')}
+                                                        onClick={() => handleOpenAcceptModal(order.id)}
                                                         className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
                                                     >
                                                         <Icon name="CheckCircle" size={14} /> Accept
@@ -130,6 +172,12 @@ export const OrdersView = () => {
                                             <button className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
                                                 <Icon name="Send" size={14} /> Send
                                             </button>
+                                            <button
+                                                onClick={() => deleteOrder(order.id)}
+                                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                                            >
+                                                <Icon name="Trash" size={14} /> Delete
+                                            </button>
                                         </div>
                                     </div>
 
@@ -145,6 +193,52 @@ export const OrdersView = () => {
                     ))
                 )}
             </div>
-        </div>
+
+
+            {/* Accept Modal */}
+            {showAcceptModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                        {/* Glow Effect */}
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500"></div>
+
+                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            <Icon name="CheckCircle" className="text-blue-500" />
+                            {isEditing ? 'Update Estimate' : 'Accept Project'}
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                            {isEditing
+                                ? 'Update the estimated completion date for this project.'
+                                : 'Please select the Estimated Completion Date to inform the client.'}
+                        </p>
+
+                        <div className="mb-6">
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Est. Completion Date</label>
+                            <input
+                                type="date"
+                                value={estimatedDate}
+                                onChange={(e) => setEstimatedDate(e.target.value)}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowAcceptModal(false)}
+                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-sm font-bold transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmAccept}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-colors shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                            >
+                                {isEditing ? 'Update Date' : 'Accept & Send'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div >
     );
 };
