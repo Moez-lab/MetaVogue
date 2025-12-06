@@ -14,6 +14,7 @@ import { LandingView } from './views/LandingView';
 import { BrandiesView } from './views/BrandiesView';
 import { OrdersView } from './views/OrdersView';
 import { AdminUsersView } from './views/AdminUsersView';
+import { FeatureExtractorView } from './views/FeatureExtractorView';
 
 const App = () => {
   const { currentView, isAuthenticated } = useGlobal();
@@ -30,6 +31,7 @@ const App = () => {
       case 'brandies': return <BrandiesView />;
       case 'orders': return <OrdersView />;
       case 'admin-users': return <AdminUsersView />;
+      case 'feature-extractor': return <FeatureExtractorView />;
       default: return <HomeView />;
     }
   };

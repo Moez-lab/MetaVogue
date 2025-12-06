@@ -74,6 +74,7 @@ export const Sidebar = () => {
                 )}
 
                 <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-8 mb-4">Tools</p>
+                <MenuItem icon="Cpu" label="Feature Extractor" id="feature-extractor" active={currentView === 'feature-extractor'} />
                 <MenuItem icon="Video" label="Video Gen" id="video" active={currentView === 'video'} />
                 <MenuItem icon="Swatch" label="Texture Lab" id="texture" active={currentView === 'texture'} />
             </nav>

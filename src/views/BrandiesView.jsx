@@ -8,6 +8,7 @@ export const BrandiesView = () => {
     const [brandName, setBrandName] = useState('');
     const [modelDescription, setModelDescription] = useState('');
     const [shirtImage, setShirtImage] = useState(null);
+    const [referenceImage, setReferenceImage] = useState(null);
     const [showPromptGuide, setShowPromptGuide] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
@@ -22,6 +23,14 @@ export const BrandiesView = () => {
         const reader = new FileReader();
         reader.onload = (e) => {
             setShirtImage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleReferenceSelect = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setReferenceImage(e.target.result);
         };
         reader.readAsDataURL(file);
     };
@@ -51,6 +60,7 @@ export const BrandiesView = () => {
         addOrder({
             modelDescription,
             shirtImage,
+            referenceImage, // Optional reference
             brandEmail: user?.email || 'Unknown',
             brandName: brandName || user?.name || 'Brand',
             paymentStatus: 'Paid',
@@ -65,6 +75,7 @@ export const BrandiesView = () => {
         setBrandName('');
         setModelDescription('');
         setShirtImage(null);
+        setReferenceImage(null);
         setCardNumber('');
         setExpiry('');
         setCvc('');
@@ -187,6 +198,7 @@ export const BrandiesView = () => {
                                         />
                                     </div>
 
+                                    {/* Apparel Upload */}
                                     <div>
                                         <label className="text-lg font-bold text-white flex items-center gap-2 mb-3">
                                             <Icon name="UploadCloud" size={20} className="text-purple-400" />
@@ -209,6 +221,33 @@ export const BrandiesView = () => {
                                             </div>
                                         ) : (
                                             <UploadZone onFileSelect={handleFileSelect} />
+                                        )}
+                                    </div>
+
+                                    {/* Reference Image Upload (Optional) */}
+                                    <div>
+                                        <label className="text-lg font-bold text-white flex items-center gap-2 mb-3">
+                                            <Icon name="Image" size={20} className="text-blue-400" />
+                                            Reference Image (Optional)
+                                            <span className="text-xs font-normal text-gray-500 bg-white/5 px-2 py-1 rounded-md ml-2">PNG / JPG</span>
+                                        </label>
+                                        <p className="text-sm text-gray-500 mb-4">Upload a reference image for style, pose, or vibe. (Will be converted to PNG if needed)</p>
+
+                                        {referenceImage ? (
+                                            <div className="relative h-64 rounded-xl overflow-hidden border border-blue-500/50 group bg-black/40">
+                                                <img src={referenceImage} alt="Reference" className="w-full h-full object-contain p-4" />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setReferenceImage(null)}
+                                                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold flex items-center gap-2 transition-transform hover:scale-105"
+                                                    >
+                                                        <Icon name="Trash" size={16} /> Remove Image
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <UploadZone onFileSelect={handleReferenceSelect} title="Upload Reference" subtext="Drag & drop or click to browse" />
                                         )}
                                     </div>
 

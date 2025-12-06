@@ -74,25 +74,51 @@ export const OrdersView = () => {
                             )}
 
                             <div className="flex flex-col lg:flex-row gap-6">
-                                {/* Image Thumbnail */}
-                                <div className="w-full lg:w-48 h-48 bg-slate-100 dark:bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shrink-0 relative group">
-                                    {order.shirtImage ? (
-                                        <>
-                                            <img src={order.shirtImage} alt="Order Asset" className="w-full h-full object-contain" />
+                                {/* Images Container */}
+                                <div className="flex gap-4">
+                                    {/* Shirt Image */}
+                                    <div className="w-48 h-48 bg-slate-100 dark:bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shrink-0 relative group">
+                                        {order.shirtImage ? (
+                                            <>
+                                                <img src={order.shirtImage} alt="Garment Asset" className="w-full h-full object-contain" />
+                                                <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-md">
+                                                    Garment
+                                                </div>
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <a
+                                                        href={order.shirtImage}
+                                                        download={`order-${order.id}-garment.png`}
+                                                        className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                                                        title="Download Garment"
+                                                    >
+                                                        <Icon name="Download" size={20} />
+                                                    </a>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-gray-600">
+                                                <Icon name="Shirt" size={32} />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Reference Image (If Exists) */}
+                                    {order.referenceImage && (
+                                        <div className="w-48 h-48 bg-slate-100 dark:bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shrink-0 relative group">
+                                            <img src={order.referenceImage} alt="Reference" className="w-full h-full object-contain" />
+                                            <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500/80 rounded text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-md">
+                                                Reference
+                                            </div>
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <a
-                                                    href={order.shirtImage}
-                                                    download={`order-${order.id}-asset.png`}
+                                                    href={order.referenceImage}
+                                                    download={`order-${order.id}-reference.png`}
                                                     className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-                                                    title="Download Asset"
+                                                    title="Download Reference"
                                                 >
                                                     <Icon name="Download" size={20} />
                                                 </a>
                                             </div>
-                                        </>
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-gray-600">
-                                            <Icon name="Shirt" size={32} />
                                         </div>
                                     )}
                                 </div>
