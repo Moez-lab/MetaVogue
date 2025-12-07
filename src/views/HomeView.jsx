@@ -3,8 +3,15 @@ import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
 
 export const HomeView = () => {
-    const { modelImage, shirtImage, setCurrentView, activeProject, createProject, cancelProject, user } = useGlobal();
+    const { modelImage, shirtImage, setCurrentView, activeProject, createProject, cancelProject, user, orders, updateOrderStatus } = useGlobal();
     const [showProjectModal, setShowProjectModal] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [cardNumber, setCardNumber] = useState('');
+    const [expiry, setExpiry] = useState('');
+    const [cvc, setCvc] = useState('');
+    const [cardName, setCardName] = useState('');
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     const [newProjectData, setNewProjectData] = useState({
         title: '',
         company: '',
@@ -23,6 +30,41 @@ export const HomeView = () => {
         });
         setShowProjectModal(false);
         setNewProjectData({ title: '', company: '', description: '' });
+    };
+
+    // Get unpaid accepted orders for current user
+    const unpaidOrders = orders.filter(o =>
+        o.brandEmail === user?.email &&
+        (o.orderStatus === 'Accepted' || o.status === 'Accepted') &&
+        o.paymentStatus === 'Unpaid'
+    );
+
+    const handlePayNow = (order) => {
+        setSelectedOrder(order);
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentSubmit = async (e) => {
+        e.preventDefault();
+        setIsProcessingPayment(true);
+
+        // Simulate payment processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Update order to paid
+        updateOrderStatus(selectedOrder.id, selectedOrder.status, {
+            paymentStatus: 'Paid',
+            paidDate: new Date().toISOString()
+        });
+
+        setIsProcessingPayment(false);
+        setShowPaymentModal(false);
+        setSelectedOrder(null);
+        // Reset form
+        setCardNumber('');
+        setExpiry('');
+        setCvc('');
+        setCardName('');
     };
 
     const WorkflowStep = ({ step, title, desc, status, action, onClick }) => (
@@ -102,6 +144,46 @@ export const HomeView = () => {
 
 
                 </div>
+
+                {/* Payment Notification Banner */}
+                {unpaidOrders.length > 0 && (
+                    <div className="mb-8 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl p-6 animate-fade-in-up">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-yellow-500 flex items-center justify-center shrink-0">
+                                <Icon name="AlertCircle" size={24} className="text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                                    Payment Required
+                                </h3>
+                                <p className="text-slate-600 dark:text-gray-300 mb-4">
+                                    You have {unpaidOrders.length} accepted order{unpaidOrders.length > 1 ? 's' : ''} awaiting payment.
+                                </p>
+                                <div className="space-y-2">
+                                    {unpaidOrders.map(order => (
+                                        <div key={order.id} className="flex items-center justify-between bg-white/50 dark:bg-black/20 rounded-lg p-3">
+                                            <div>
+                                                <p className="font-bold text-slate-900 dark:text-white text-sm">
+                                                    Order #{order.id}
+                                                </p>
+                                                <p className="text-xs text-slate-500 dark:text-gray-400">
+                                                    Amount: ${order.amount?.toFixed(2) || '49.00'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => handlePayNow(order)}
+                                                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold text-sm transition-all flex items-center gap-2"
+                                            >
+                                                <Icon name="CreditCard" size={16} />
+                                                Pay Now
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -344,6 +426,89 @@ export const HomeView = () => {
                                 className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all mt-4"
                             >
                                 Create & Start
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Payment Modal */}
+            {showPaymentModal && selectedOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#111827] w-full max-w-md rounded-3xl p-8 border border-slate-200 dark:border-white/10 shadow-2xl relative">
+                        <button
+                            onClick={() => setShowPaymentModal(false)}
+                            className="absolute right-4 top-4 p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <Icon name="X" size={20} className="text-slate-500" />
+                        </button>
+
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Complete Payment</h3>
+                        <p className="text-slate-500 dark:text-gray-400 mb-6">Order #{selectedOrder.id}</p>
+
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-6">
+                            <p className="text-sm text-slate-600 dark:text-gray-300">
+                                <span className="font-bold">Amount Due:</span> ${selectedOrder.amount?.toFixed(2) || '49.00'}
+                            </p>
+                        </div>
+
+                        <form onSubmit={handlePaymentSubmit} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">Cardholder Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={cardName}
+                                    onChange={e => setCardName(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                    placeholder="John Doe"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">Card Number</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={cardNumber}
+                                    onChange={e => setCardNumber(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                    placeholder="0000 0000 0000 0000"
+                                    maxLength="19"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">Expiry</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={expiry}
+                                        onChange={e => setExpiry(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                        placeholder="MM/YY"
+                                        maxLength="5"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 block">CVC</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={cvc}
+                                        onChange={e => setCvc(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                        placeholder="123"
+                                        maxLength="4"
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isProcessingPayment}
+                                className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-xl shadow-lg shadow-yellow-500/20 transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isProcessingPayment ? 'Processing...' : `Pay $${selectedOrder.amount?.toFixed(2) || '49.00'}`}
                             </button>
                         </form>
                     </div>

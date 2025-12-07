@@ -158,6 +158,49 @@ export const FeatureExtractorView = () => {
                     <div className="col-span-12 lg:col-span-7">
                         {result ? (
                             <div className="space-y-6 animate-fade-in-up">
+                                {/* Human-Readable Summary */}
+                                {features?.human_readable && (
+                                    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-2xl p-6 border border-cyan-200 dark:border-cyan-800/50 shadow-sm">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <Icon name="User" size={20} className="text-cyan-600" />
+                                            Profile Summary
+                                        </h3>
+                                        <div className="space-y-3 text-gray-700 dark:text-gray-300">
+                                            {/* Appearance */}
+                                            {features.human_readable.appearance?.length > 0 && (
+                                                <div className="flex gap-3">
+                                                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold min-w-[100px]">Appearance:</span>
+                                                    <p className="flex-1">{features.human_readable.appearance.join(', ')}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Body Type */}
+                                            {features.human_readable.body_type && (
+                                                <div className="flex gap-3">
+                                                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold min-w-[100px]">Build:</span>
+                                                    <p className="flex-1 capitalize">{features.human_readable.body_type}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Measurements Context */}
+                                            {features.human_readable.measurements_context?.length > 0 && (
+                                                <div className="flex gap-3">
+                                                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold min-w-[100px]">Details:</span>
+                                                    <p className="flex-1 capitalize">{features.human_readable.measurements_context.join(', ')}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Facial Features */}
+                                            {features.human_readable.facial_features?.length > 0 && (
+                                                <div className="flex gap-3">
+                                                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold min-w-[100px]">Features:</span>
+                                                    <p className="flex-1 capitalize">{features.human_readable.facial_features.join(', ')}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Top Stats Cards */}
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div className="bg-white dark:bg-[#111827] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
@@ -263,9 +306,11 @@ export const FeatureExtractorView = () => {
                                             <h4 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
                                                 <Icon name="Scissors" size={16} className="text-orange-600" /> Style & Grooming
                                             </h4>
+                                            {renderMetricRow('Gender', features?.gender)}
                                             {renderMetricRow('Hair Type', features?.hair_type)}
                                             {renderMetricRow('Hair Length', features?.hair_length)}
-                                            {renderMetricRow('Facial Hair', features?.facial_hair)}
+                                            {/* Only show facial hair for males */}
+                                            {features?.gender === 'Male' && renderMetricRow('Facial Hair', features?.facial_hair)}
                                         </div>
                                     </div>
                                 </div>

@@ -9,6 +9,7 @@ export const LoginView = ({ onBack }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -176,10 +177,10 @@ export const LoginView = ({ onBack }) => {
 
                             <div className="group relative">
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="peer w-full bg-transparent border-b border-white/20 py-2 text-white placeholder-transparent focus:border-primary focus:outline-none transition-colors"
+                                    className="peer w-full bg-transparent border-b border-white/20 py-2 pr-10 text-white placeholder-transparent focus:border-primary focus:outline-none transition-colors"
                                     placeholder="Password"
                                     id="password"
                                     required
@@ -190,8 +191,12 @@ export const LoginView = ({ onBack }) => {
                                 >
                                     Password
                                 </label>
-                                <button type="button" className="absolute right-0 top-2 text-white/30 hover:text-white transition-colors">
-                                    <Icon name="Eye" size={18} />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-0 top-2 text-white/30 hover:text-white transition-colors"
+                                >
+                                    <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
                                 </button>
                             </div>
 

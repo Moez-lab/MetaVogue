@@ -5,6 +5,7 @@ import numpy as np
 import json
 import sys
 from datetime import datetime
+from human_readable import get_feature_summary
 
 # Initialize mediapipe solutions
 mp_face_detection = mp.solutions.face_detection
@@ -299,6 +300,63 @@ def classify_body_shape(measurements):
         return "Apple/Oval"
     else:
         return "Balanced"
+
+def detect_gender(body_measurements, hair_length, face_bbox):
+    """Detect gender based on body measurements and features"""
+    score = 0  # Positive = Male, Negative = Female
+    
+    # Body measurements analysis
+    if body_measurements.get('shoulder_width') and body_measurements.get('hips'):
+        shoulder_hip_ratio = body_measurements['shoulder_width'] / body_measurements['hips']
+        
+        # Males typically have broader shoulders relative to hips
+        if shoulder_hip_ratio > 1.1:
+            score += 2  # Strong male indicator
+        elif shoulder_hip_ratio < 0.95:
+            score -= 2  # Strong female indicator
+        elif shoulder_hip_ratio > 1.05:
+            score += 1  # Mild male indicator
+        else:
+            score -= 1  # Mild female indicator
+    
+    # Bust/chest analysis
+    if body_measurements.get('bust') and body_measurements.get('shoulder_width'):
+        bust_shoulder_ratio = body_measurements['bust'] / body_measurements['shoulder_width']
+        
+        # Females typically have larger bust relative to shoulders
+        if bust_shoulder_ratio > 1.15:
+            score -= 2  # Female indicator
+        elif bust_shoulder_ratio < 1.05:
+            score += 1  # Male indicator
+    
+    # Hair length (general trend, not definitive)
+    if hair_length:
+        if "Long" in hair_length:
+            score -= 1  # Slight female indicator
+        elif "Very Short" in hair_length or "Bald" in hair_length:
+            score += 1  # Slight male indicator
+    
+    # Face shape (width to height ratio)
+    if face_bbox:
+        x1, y1, x2, y2 = face_bbox
+        face_width = x2 - x1
+        face_height = y2 - y1
+        
+        if face_height > 0:
+            face_ratio = face_width / face_height
+            # Males tend to have wider faces
+            if face_ratio > 0.85:
+                score += 1
+            elif face_ratio < 0.75:
+                score -= 1
+    
+    # Final classification
+    if score > 0:
+        return "Male"
+    elif score < 0:
+        return "Female"
+    else:
+        return "Unknown"
 
 def detect_facial_hair(image, face_bbox, face_color):
     """Detect presence of facial hair (beard/mustache)"""
@@ -820,8 +878,6 @@ def extract_features(image_path, visualize=True):
             emotion = "Unknown"
             head_pose = {"yaw": 0, "pitch": 0, "roll": 0}
         
-        facial_hair = detect_facial_hair(image, (x1, y1, x2, y2), face_color)
-        
         hair_region_height = hair_y2 - hair_y1 if 'hair_y1' in locals() and 'hair_y2' in locals() else None
         hair_length = estimate_hair_length(hair_region_height, y2 - y1)
         hair_type = detect_hair_type(hair_region) if 'hair_region' in locals() and hair_region.size > 0 else "Unknown"
@@ -829,6 +885,15 @@ def extract_features(image_path, visualize=True):
         body_measurements = extract_body_measurements(image, rgb_image, vis_image, visualize)
         
         body_shape = classify_body_shape(body_measurements)
+        
+        # Detect gender first
+        gender = detect_gender(body_measurements, hair_length, (x1, y1, x2, y2))
+        
+        # Only check facial hair for males
+        if gender == "Male":
+            facial_hair = detect_facial_hair(image, (x1, y1, x2, y2), face_color)
+        else:
+            facial_hair = "N/A"  # Not applicable for females
 
         if visualize:
             # Create expanded canvas with info panel on the right
@@ -914,8 +979,13 @@ def extract_features(image_path, visualize=True):
             "hair_length": hair_length,
             "hair_type": hair_type,
             "body_measurements": body_measurements,
-            "body_shape": body_shape
+            "body_shape": body_shape,
+            "gender": gender
         }
+        
+        # Generate human-readable summary
+        features["human_readable"] = get_feature_summary(features)
+        
         return features
 
 if __name__ == "__main__":

@@ -4,19 +4,14 @@ import { Icon } from '../components/Icon';
 import { UploadZone } from '../components/UploadZone';
 
 export const BrandiesView = () => {
-    const { addOrder, user } = useGlobal();
+    const { addOrder, user, setCurrentView } = useGlobal();
     const [brandName, setBrandName] = useState('');
     const [modelDescription, setModelDescription] = useState('');
     const [shirtImage, setShirtImage] = useState(null);
     const [referenceImage, setReferenceImage] = useState(null);
+    const [referenceHeight, setReferenceHeight] = useState('170'); // Default height in cm
     const [showPromptGuide, setShowPromptGuide] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-
-    // Payment State
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvc, setCvc] = useState('');
-    const [name, setName] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
     const handleFileSelect = (file) => {
@@ -35,35 +30,22 @@ export const BrandiesView = () => {
         reader.readAsDataURL(file);
     };
 
-    const formatCardNumber = (value) => {
-        const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-        const matches = v.match(/\d{4,16}/g);
-        const match = matches && matches[0] || '';
-        const parts = [];
-        for (let i = 0, len = match.length; i < len; i += 4) {
-            parts.push(match.substring(i, i + 4));
-        }
-        if (parts.length) {
-            return parts.join(' ');
-        } else {
-            return value;
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsProcessing(true);
 
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Simulate submission processing
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         addOrder({
             modelDescription,
             shirtImage,
-            referenceImage, // Optional reference
+            referenceImage,
+            referenceHeight: referenceImage ? referenceHeight : null,
             brandEmail: user?.email || 'Unknown',
             brandName: brandName || user?.name || 'Brand',
-            paymentStatus: 'Paid',
+            paymentStatus: 'Unpaid',
+            orderStatus: 'Pending Approval',
             amount: 49.00
         });
 
@@ -76,15 +58,12 @@ export const BrandiesView = () => {
         setModelDescription('');
         setShirtImage(null);
         setReferenceImage(null);
-        setCardNumber('');
-        setExpiry('');
-        setCvc('');
-        setName('');
+        setReferenceHeight('170');
         setSubmitted(false);
     };
 
     return (
-        <div className="min-h-screen w-full relative bg-[#050b14] overflow-y-auto font-sans text-white selection:bg-purple-500/30">
+        <div className="w-full relative font-sans text-white selection:bg-purple-500/30">
             {/* Background Pattern */}
             <div className="fixed inset-0 opacity-20 pointer-events-none"
                 style={{
@@ -100,18 +79,20 @@ export const BrandiesView = () => {
             <div className="relative z-10 p-8 max-w-7xl mx-auto flex flex-col min-h-screen">
 
                 {/* Hero Section */}
-                <div className="text-center py-16 animate-fade-in-up">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-bold tracking-wider uppercase mb-6 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-                        Enterprise Solution
+                <div className="flex flex-col md:flex-row justify-between items-end mb-12 py-8 animate-fade-in-up">
+                    <div className="text-left w-full md:w-2/3">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-bold tracking-wider uppercase mb-6 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                            Enterprise Solution
+                        </div>
+                        <h1 className="text-6xl md:text-7xl font-black tracking-tighter mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-purple-400 drop-shadow-2xl">
+                            Meta <span className="text-purple-500">Vogue</span>
+                        </h1>
+                        <p className="text-gray-400 text-xl max-w-2xl leading-relaxed">
+                            Transform your physical apparel into hyper-realistic digital assets.
+                            We combine <span className="text-white font-bold">AI generation</span> with <span className="text-white font-bold">physics simulation</span> to create marketing-ready visuals.
+                        </p>
                     </div>
-                    <h1 className="text-6xl md:text-7xl font-black tracking-tighter mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-purple-400 drop-shadow-2xl">
-                        Meta <span className="text-purple-500">Vogue</span>
-                    </h1>
-                    <p className="text-gray-400 text-xl max-w-2xl mx-auto leading-relaxed">
-                        Transform your physical apparel into hyper-realistic digital assets.
-                        We combine <span className="text-white font-bold">AI generation</span> with <span className="text-white font-bold">physics simulation</span> to create marketing-ready visuals.
-                    </p>
                 </div>
 
                 {/* Features Grid */}
@@ -231,7 +212,36 @@ export const BrandiesView = () => {
                                             Reference Image (Optional)
                                             <span className="text-xs font-normal text-gray-500 bg-white/5 px-2 py-1 rounded-md ml-2">PNG / JPG</span>
                                         </label>
-                                        <p className="text-sm text-gray-500 mb-4">Upload a reference image for style, pose, or vibe. (Will be converted to PNG if needed)</p>
+
+                                        {/* Instructions */}
+                                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-4">
+                                            <p className="text-sm font-bold text-blue-300 mb-2 flex items-center gap-2">
+                                                <Icon name="Info" size={14} />
+                                                Best Results Guidelines:
+                                            </p>
+                                            <ul className="text-xs text-gray-400 space-y-1.5 ml-5">
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-blue-400 mt-0.5">•</span>
+                                                    <span><strong className="text-gray-300">Full body shot</strong> - Head to feet visible, standing upright</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-blue-400 mt-0.5">•</span>
+                                                    <span><strong className="text-gray-300">Plain background</strong> - Solid color (white/gray preferred)</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-blue-400 mt-0.5">•</span>
+                                                    <span><strong className="text-gray-300">Good lighting</strong> - Well-lit, no harsh shadows</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-blue-400 mt-0.5">•</span>
+                                                    <span><strong className="text-gray-300">Fitted clothing</strong> - Shows body shape clearly</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-blue-400 mt-0.5">•</span>
+                                                    <span><strong className="text-gray-300">High resolution</strong> - At least 1080p for best accuracy</span>
+                                                </li>
+                                            </ul>
+                                        </div>
 
                                         {referenceImage ? (
                                             <div className="relative h-64 rounded-xl overflow-hidden border border-blue-500/50 group bg-black/40">
@@ -249,91 +259,73 @@ export const BrandiesView = () => {
                                         ) : (
                                             <UploadZone onFileSelect={handleReferenceSelect} title="Upload Reference" subtext="Drag & drop or click to browse" />
                                         )}
+
+                                        {/* Height Input (shown when reference image is uploaded) */}
+                                        {referenceImage && (
+                                            <div className="mt-4">
+                                                <label className="block text-sm font-bold text-gray-300 mb-2">
+                                                    Reference Person Height (cm)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={referenceHeight}
+                                                    onChange={(e) => setReferenceHeight(e.target.value)}
+                                                    placeholder="170"
+                                                    min="100"
+                                                    max="250"
+                                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-2">Enter the height of the person in the reference image for accurate proportions</p>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Payment Section */}
+                                    {/* Order Summary */}
                                     <div className="pt-8 border-t border-white/10">
-                                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                                            <Icon name="CreditCard" className="text-purple-400" />
-                                            Payment Details
+                                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                            <Icon name="ShoppingCart" className="text-purple-400" />
+                                            Order Summary
                                         </h3>
 
-                                        <div className="space-y-6">
-                                            <div>
-                                                <label className="block text-sm font-bold text-gray-300 mb-2">Cardholder Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={name}
-                                                    onChange={(e) => setName(e.target.value)}
-                                                    placeholder="John Doe"
-                                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                                                    required
-                                                />
-                                            </div>
+                                        <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-6 mb-6">
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-gray-400">AI Model Generation</span>
+                                                    <span className="text-white font-mono">$49.00</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-gray-400">Virtual Garment Fitting</span>
+                                                    <span className="text-green-400 font-mono">Included</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-gray-400">4K Studio Renders</span>
+                                                    <span className="text-green-400 font-mono">Included</span>
+                                                </div>
 
-                                            <div>
-                                                <label className="block text-sm font-bold text-gray-300 mb-2">Card Number</label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        value={cardNumber}
-                                                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                                                        placeholder="0000 0000 0000 0000"
-                                                        maxLength="19"
-                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all pl-12"
-                                                        required
-                                                    />
-                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                                        <Icon name="CreditCard" size={20} />
+                                                <div className="border-t border-white/10 pt-3 mt-3">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-lg font-bold text-white">Total Amount</span>
+                                                        <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">$49.00</span>
                                                     </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-sm font-bold text-gray-300 mb-2">Expiry Date</label>
-                                                    <input
-                                                        type="text"
-                                                        value={expiry}
-                                                        onChange={(e) => setExpiry(e.target.value)}
-                                                        placeholder="MM/YY"
-                                                        maxLength="5"
-                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-center"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-bold text-gray-300 mb-2">CVC</label>
-                                                    <input
-                                                        type="text"
-                                                        value={cvc}
-                                                        onChange={(e) => setCvc(e.target.value)}
-                                                        placeholder="123"
-                                                        maxLength="3"
-                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-center"
-                                                        required
-                                                    />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Order Summary */}
-
                                     <button
                                         type="submit"
-                                        disabled={!brandName || !modelDescription || !shirtImage || !cardNumber || !expiry || !cvc || !name || isProcessing}
+                                        disabled={!brandName || !modelDescription || !shirtImage || isProcessing}
                                         className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_30px_rgba(147,51,234,0.4)] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                                     >
                                         {isProcessing ? (
                                             <>
                                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                                Processing Payment...
+                                                Processing...
                                             </>
                                         ) : (
                                             <>
-                                                <Icon name="Lock" size={18} />
-                                                Pay & Submit Order
+                                                <Icon name="Send" size={18} />
+                                                Submit Order
                                             </>
                                         )}
                                     </button>
@@ -343,17 +335,25 @@ export const BrandiesView = () => {
                                     <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6 text-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
                                         <Icon name="CheckCircle" size={48} />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white mb-2">Order Confirmed!</h3>
+                                    <h3 className="text-3xl font-black text-white mb-2">Order Submitted!</h3>
                                     <p className="text-gray-400 mb-8 max-w-md">
-                                        Payment successful. Our AI is now processing your request. You will receive an email notification when your assets are ready for review.
+                                        Your request has been received. You will be notified when an admin reviews it.
                                     </p>
 
-                                    <button
-                                        onClick={handleReset}
-                                        className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors border border-white/10"
-                                    >
-                                        Submit Another Request
-                                    </button>
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={handleReset}
+                                            className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors border border-white/10"
+                                        >
+                                            Submit Another
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentView('my-orders')}
+                                            className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-500/30"
+                                        >
+                                            View My Orders
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

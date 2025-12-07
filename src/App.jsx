@@ -2,6 +2,7 @@ import { useState } from 'react';
 // Force HMR Update
 import { useGlobal } from './context/GlobalContext';
 import { Sidebar } from './components/Sidebar';
+import { BrandiesSidebar } from './components/BrandiesSidebar';
 import { TopBar } from './components/TopBar';
 import { HomeView } from './views/HomeView';
 import { ModelStudioView } from './views/ModelStudioView';
@@ -15,9 +16,11 @@ import { BrandiesView } from './views/BrandiesView';
 import { OrdersView } from './views/OrdersView';
 import { AdminUsersView } from './views/AdminUsersView';
 import { FeatureExtractorView } from './views/FeatureExtractorView';
+import { AnalyticsView } from './views/AnalyticsView';
+import { MyOrdersView } from './views/MyOrdersView';
 
 const App = () => {
-  const { currentView, isAuthenticated } = useGlobal();
+  const { currentView, isAuthenticated, user } = useGlobal();
   const [showLogin, setShowLogin] = useState(false);
 
   const renderView = () => {
@@ -32,6 +35,8 @@ const App = () => {
       case 'orders': return <OrdersView />;
       case 'admin-users': return <AdminUsersView />;
       case 'feature-extractor': return <FeatureExtractorView />;
+      case 'analytics': return <AnalyticsView />;
+      case 'my-orders': return <MyOrdersView />;
       default: return <HomeView />;
     }
   };
@@ -43,10 +48,6 @@ const App = () => {
     return <LandingView onGetStarted={() => setShowLogin(true)} onSignIn={() => setShowLogin(true)} />;
   }
 
-  // Special layout for Brandies View (No Sidebar/TopBar)
-  if (currentView === 'brandies') {
-    return <BrandiesView />;
-  }
 
   return (
     <div className="flex h-screen w-full relative overflow-hidden font-sans">
@@ -61,7 +62,7 @@ const App = () => {
         }}
       ></div>
 
-      <Sidebar />
+      {user?.email === 'mueezzakir6@gmail.com' ? <Sidebar /> : <BrandiesSidebar />}
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10 mt-4 mr-4 rounded-tl-3xl rounded-tr-3xl shadow-2xl bg-white dark:bg-[#050b14]">
         <TopBar />
