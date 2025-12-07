@@ -1,0 +1,38 @@
+{
+  "image_path": "C:\\Users\\mueez\\OneDrive\\Desktop\\web-meta\\public\\temp\\uploads\\upload-1765093273093-426463552.jpg",
+  "timestamp": "2025-12-07 12:41:53",
+  "features": {
+    "face_color": [
+      119,
+      78,
+      71
+    ],
+    "hair_color": [
+      83,
+      90,
+      128
+    ],
+    "hair_color_name": "Auburn",
+    "eyes_open": null,
+    "smiling": null,
+    "eye_color": "Unknown",
+    "emotion": "Unknown",
+    "head_pose": {
+      "yaw": 0,
+      "pitch": 0,
+      "roll": 0
+    },
+    "facial_hair": "No/Minimal",
+    "hair_length": "Medium",
+    "hair_type": "Wavy",
+    "body_shape": "Inverted Triangle",
+    "body_measurements_cm": {
+      "shoulder_width_cm": 39.4,
+      "bust_cm": 61.2,
+      "waist_cm": 18.8,
+      "hips_cm": 22.2,
+      "height_cm": 170.0,
+      "conversion_ratio": 0.8239
+    }
+  }
+}

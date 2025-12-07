@@ -1,0 +1,38 @@
+{
+  "image_path": "C:\\Users\\mueez\\OneDrive\\Desktop\\web-meta\\public\\temp\\uploads\\upload-1765057261952-492711767.jpg",
+  "timestamp": "2025-12-07 02:41:33",
+  "features": {
+    "face_color": [
+      223,
+      179,
+      163
+    ],
+    "hair_color": [
+      71,
+      83,
+      119
+    ],
+    "hair_color_name": "Dark Red",
+    "eyes_open": null,
+    "smiling": null,
+    "eye_color": "Unknown",
+    "emotion": "Unknown",
+    "head_pose": {
+      "yaw": 0,
+      "pitch": 0,
+      "roll": 0
+    },
+    "facial_hair": "No/Minimal",
+    "hair_length": "Short",
+    "hair_type": "Straight",
+    "body_shape": "Inverted Triangle",
+    "body_measurements_cm": {
+      "shoulder_width_cm": 31.0,
+      "bust_cm": 48.1,
+      "waist_cm": 14.8,
+      "hips_cm": 17.4,
+      "height_cm": 170.0,
+      "conversion_ratio": 0.8683
+    }
+  }
+}

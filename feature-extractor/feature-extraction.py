@@ -56,6 +56,70 @@ def get_median_color(image, mask=None):
     median_color = np.median(non_black_pixels, axis=0).astype(int)
     return tuple(median_color)
 
+def classify_hair_color(bgr_color):
+    """Classify hair color from BGR tuple into readable category"""
+    if bgr_color is None:
+        return "Unknown"
+    
+    # Convert BGR to RGB
+    b, g, r = bgr_color
+    
+    # Calculate brightness and saturation
+    brightness = (r + g + b) / 3
+    max_val = max(r, g, b)
+    min_val = min(r, g, b)
+    saturation = (max_val - min_val) / max_val if max_val > 0 else 0
+    
+    # Very dark hair (Black/Dark Brown)
+    # Also check if it's very dark with blue tint (common in black hair photos)
+    if brightness < 45 or (brightness < 60 and b > r and b > g):
+        return "Black"
+    elif brightness < 75:
+        return "Dark Brown"
+    
+    # Check for red/auburn hair (red channel significantly higher)
+    # But only if brightness is high enough - dark hair with slight red tint is still dark brown
+    if r > g + 20 and r > b + 20 and saturation > 0.25 and brightness > 90:
+        if brightness > 130:
+            return "Light Auburn"
+        elif brightness > 100:
+            return "Auburn"
+        else:
+            return "Dark Red"
+    
+    # Check for blonde hair (high brightness, low saturation, balanced RGB)
+    if brightness > 150 and saturation < 0.25:
+        return "Blonde"
+    elif brightness > 130 and saturation < 0.2:
+        return "Light Blonde"
+    elif brightness > 110 and saturation < 0.3:
+        return "Dirty Blonde"
+    
+    # Brown variations
+    if brightness >= 70 and brightness < 110:
+        if saturation < 0.15:
+            return "Medium Brown"
+        else:
+            return "Brown"
+    elif brightness >= 110 and brightness < 150:
+        return "Light Brown"
+    
+    # Gray/White/Silver hair (low saturation, high brightness)
+    if saturation < 0.12 and brightness > 120:
+        if brightness > 200:
+            return "White/Platinum"
+        else:
+            return "Gray/Silver"
+    
+    # Default fallback based on brightness
+    if brightness < 90:
+        return "Dark Brown"
+    else:
+        return "Brown"
+
+
+
+
 def save_to_json(features, image_path):
     """Save extracted features to JSON file"""
     def convert_to_serializable(obj):
@@ -483,27 +547,83 @@ def extract_features(image_path, visualize=True):
         face_h = y2 - y1
         face_w = x2 - x1
         
-        margin_h = int(face_h * 0.2)
-        margin_w = int(face_w * 0.2)
-        face_center = image[y1+margin_h:y2-margin_h, x1+margin_w:x2-margin_w]
+        # IMPROVED FACE COLOR DETECTION - Sample from cheeks and forehead
+        # Avoid center (nose/mouth shadows) and use skin-rich areas
         
-        face_color = get_median_color(face_center) if face_center.size > 0 else (0, 0, 0)
+        # Left cheek region
+        left_cheek_x1 = x1 + int(face_w * 0.15)
+        left_cheek_x2 = x1 + int(face_w * 0.4)
+        cheek_y1 = y1 + int(face_h * 0.4)
+        cheek_y2 = y1 + int(face_h * 0.7)
+        left_cheek = image[cheek_y1:cheek_y2, left_cheek_x1:left_cheek_x2]
+        
+        # Right cheek region
+        right_cheek_x1 = x1 + int(face_w * 0.6)
+        right_cheek_x2 = x1 + int(face_w * 0.85)
+        right_cheek = image[cheek_y1:cheek_y2, right_cheek_x1:right_cheek_x2]
+        
+        # Forehead region
+        forehead_x1 = x1 + int(face_w * 0.25)
+        forehead_x2 = x1 + int(face_w * 0.75)
+        forehead_y1 = y1 + int(face_h * 0.15)
+        forehead_y2 = y1 + int(face_h * 0.35)
+        forehead = image[forehead_y1:forehead_y2, forehead_x1:forehead_x2]
+        
+        # Combine all regions and get median color
+        face_regions = [r for r in [left_cheek, right_cheek, forehead] if r.size > 0]
+        if face_regions:
+            all_face_pixels = np.vstack([region.reshape(-1, 3) for region in face_regions])
+            
+            # FILTER OUT SHADOWS - Only use well-lit pixels
+            # Convert to HSV to check brightness
+            pixels_hsv = cv2.cvtColor(np.uint8([all_face_pixels]), cv2.COLOR_BGR2HSV)[0]
+            brightness = pixels_hsv[:, 2]
+            
+            # Only keep pixels in upper 60% of brightness range
+            brightness_threshold = np.percentile(brightness, 40)  # Remove darkest 40%
+            well_lit_mask = brightness >= brightness_threshold
+            
+            if np.sum(well_lit_mask) > 50:
+                filtered_face_pixels = all_face_pixels[well_lit_mask]
+                face_color = tuple(map(int, np.median(filtered_face_pixels, axis=0)))
+                print(f"Face detection: Using {len(filtered_face_pixels)} well-lit pixels (filtered {np.sum(~well_lit_mask)} shadow pixels)")
+            else:
+                # Not enough well-lit pixels, use all
+                face_color = tuple(map(int, np.median(all_face_pixels, axis=0)))
+                print(f"Face detection: Using all {len(all_face_pixels)} pixels (insufficient well-lit pixels)")
+            
+            # Visualize face sampling regions
+            if visualize:
+                cv2.rectangle(vis_image, (left_cheek_x1, cheek_y1), (left_cheek_x2, cheek_y2), (0, 255, 255), 1)
+                cv2.rectangle(vis_image, (right_cheek_x1, cheek_y1), (right_cheek_x2, cheek_y2), (0, 255, 255), 1)
+                cv2.rectangle(vis_image, (forehead_x1, forehead_y1), (forehead_x2, forehead_y2), (0, 255, 255), 1)
+                cv2.putText(vis_image, "Face Sampling", (forehead_x1, forehead_y1-5), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 255), 1)
+        else:
+            # Fallback to center region
+            margin_h = int(face_h * 0.2)
+            margin_w = int(face_w * 0.2)
+            face_center = image[y1+margin_h:y2-margin_h, x1+margin_w:x2-margin_w]
+            face_color = get_median_color(face_center) if face_center.size > 0 else (0, 0, 0)
+        
+        print(f"Face color (BGR): {face_color}, Brightness: {np.mean(face_color):.1f}")
 
-        # ENHANCED HAIR COLOR DETECTION - Multi-region sampling
+
+        # ENHANCED HAIR COLOR DETECTION - Multi-region sampling with spatial weighting
         # Sample from top, left side, and right side of face
         
-        # Region 1: Top (above forehead)
-        hair_height = int(face_h * 0.5)  # Increased from 0.4 to capture more
+        # Region 1: Top (above forehead) - MOST RELIABLE
+        hair_height = int(face_h * 0.5)
         hair_y1 = max(0, y1 - hair_height)
         hair_y2 = y1
         hair_top = image[hair_y1:hair_y2, x1:x2]
         
-        # Region 2: Left side
-        side_width = int(face_w * 0.4)
-        hair_left = image[y1:y2, max(0, x1-side_width):x1]
+        # Region 2: Left side - SUPPLEMENTARY
+        side_width = int(face_w * 0.3)  # Reduced to minimize background
+        hair_left = image[y1:int(y1 + face_h * 0.4), max(0, x1-side_width):x1]
         
-        # Region 3: Right side
-        hair_right = image[y1:y2, x2:min(w, x2+side_width)]
+        # Region 3: Right side - SUPPLEMENTARY
+        hair_right = image[y1:int(y1 + face_h * 0.4), x2:min(w, x2+side_width)]
         
         if visualize:
             # Visualize all hair sampling regions
@@ -511,56 +631,103 @@ def extract_features(image_path, visualize=True):
                 cv2.rectangle(vis_image, (x1, hair_y1), (x2, hair_y2), (255, 0, 0), 2)
                 cv2.putText(vis_image, "Hair-Top", (x1, hair_y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             if hair_left.size > 0:
-                cv2.rectangle(vis_image, (max(0, x1-side_width), y1), (x1, y2), (255, 100, 0), 2)
+                cv2.rectangle(vis_image, (max(0, x1-side_width), y1), (x1, int(y1 + face_h * 0.4)), (255, 100, 0), 2)
             if hair_right.size > 0:
-                cv2.rectangle(vis_image, (x2, y1), (min(w, x2+side_width), y2), (255, 100, 0), 2)
+                cv2.rectangle(vis_image, (x2, y1), (min(w, x2+side_width), int(y1 + face_h * 0.4)), (255, 100, 0), 2)
         
-        # Combine all regions and extract robust hair color
-        hair_regions = [r for r in [hair_top, hair_left, hair_right] if r.size > 0]
+        # Extract hair color with improved filtering
+        hair_color = None
         
-        if hair_regions:
-            # Combine all pixels from all regions
-            all_hair_pixels = np.vstack([region.reshape(-1, 3) for region in hair_regions])
+        if hair_top.size > 0:
+            # STRATEGY: Prioritize top region, use sides only for validation
             
-            # Filter out skin-like pixels using HSV distance
+            # Convert to different color spaces for robust filtering
+            top_pixels = hair_top.reshape(-1, 3)
+            
+            # 1. EDGE-BASED FILTERING - Remove smooth background regions
+            gray_top = cv2.cvtColor(hair_top, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray_top, 30, 100)
+            edge_mask = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
+            edge_pixels_idx = edge_mask.reshape(-1) > 0
+            
+            # 2. HSV FILTERING - Remove skin-like colors
             face_hsv = cv2.cvtColor(np.uint8([[face_color]]), cv2.COLOR_BGR2HSV)[0][0]
-            pixels_hsv = cv2.cvtColor(np.uint8([all_hair_pixels]), cv2.COLOR_BGR2HSV)[0]
+            top_hsv = cv2.cvtColor(np.uint8([top_pixels]), cv2.COLOR_BGR2HSV)[0]
             
-            # Calculate HSV distance from face color (focus on Hue and Saturation)
-            hue_diff = np.abs(pixels_hsv[:, 0].astype(int) - int(face_hsv[0]))
-            hue_diff = np.minimum(hue_diff, 180 - hue_diff)  # Circular hue distance
-            sat_diff = np.abs(pixels_hsv[:, 1].astype(int) - int(face_hsv[1]))
+            hue_diff = np.abs(top_hsv[:, 0].astype(int) - int(face_hsv[0]))
+            hue_diff = np.minimum(hue_diff, 180 - hue_diff)
+            sat_diff = np.abs(top_hsv[:, 1].astype(int) - int(face_hsv[1]))
             
-            # Keep pixels that are sufficiently different from skin
-            not_skin = (hue_diff > 15) | (sat_diff > 30)
+            # More lenient for dark hair (low saturation is OK)
+            not_skin = (hue_diff > 12) | (sat_diff > 25) | (top_hsv[:, 2] < 60)
             
-            # Also filter very dark (likely background) and very bright pixels
-            brightness = pixels_hsv[:, 2]
-            not_extreme = (brightness > 20) & (brightness < 240)
+            # 3. BRIGHTNESS FILTERING - Keep reasonable range
+            brightness = top_hsv[:, 2]
+            valid_brightness = (brightness > 20) & (brightness < 240)
             
-            valid_pixels = all_hair_pixels[not_skin & not_extreme]
+            # 4. BACKGROUND COLOR FILTERING - Remove common background colors
+            # Detect blue/gray backgrounds (common issue)
+            b, g, r = top_pixels[:, 0], top_pixels[:, 1], top_pixels[:, 2]
+            is_blue_gray = (b > r + 15) & (b > g + 10) & (brightness > 80)  # Blue-ish backgrounds
+            is_pure_gray = (np.abs(r - g) < 15) & (np.abs(g - b) < 15) & (brightness > 100)  # Gray backgrounds
+            not_background = ~(is_blue_gray | is_pure_gray)
             
-            if len(valid_pixels) > 50:
-                # Use K-Means to find dominant hair color
+            # COMBINE FILTERS with priority on edge detection
+            # For dark hair: prioritize edge pixels (texture) over color variation
+            valid_mask = not_skin & valid_brightness & not_background
+            
+            # Get pixels that pass filters
+            filtered_pixels = top_pixels[valid_mask]
+            
+            # If we have edge information, further prioritize edge pixels
+            edge_filtered = top_pixels[valid_mask & edge_pixels_idx]
+            
+            # Decision logic: use edge pixels if we have enough, otherwise use all filtered
+            if len(edge_filtered) > 100:
+                final_pixels = edge_filtered
+                print(f"Hair detection: Using {len(final_pixels)} edge-based pixels from top region")
+            elif len(filtered_pixels) > 100:
+                final_pixels = filtered_pixels
+                print(f"Hair detection: Using {len(final_pixels)} filtered pixels from top region")
+            else:
+                # Fallback: use all top pixels with minimal filtering
+                minimal_filter = (brightness > 20) & (brightness < 240)
+                final_pixels = top_pixels[minimal_filter]
+                print(f"Hair detection: Using {len(final_pixels)} minimally filtered pixels (fallback)")
+            
+            if len(final_pixels) > 50:
+                # Use K-Means clustering to find dominant hair color
                 from sklearn.cluster import KMeans
                 try:
-                    kmeans = KMeans(n_clusters=min(3, len(valid_pixels)//20), random_state=42, n_init=10)
-                    kmeans.fit(valid_pixels)
+                    n_clusters = min(3, max(2, len(final_pixels) // 50))
+                    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+                    kmeans.fit(final_pixels)
                     
-                    # Get the largest cluster (most common hair color)
+                    # Get cluster centers and their sizes
                     labels = kmeans.labels_
                     unique, counts = np.unique(labels, return_counts=True)
-                    dominant_cluster = unique[np.argmax(counts)]
                     
-                    hair_color = tuple(map(int, kmeans.cluster_centers_[dominant_cluster]))
-                except:
-                    # Fallback to median if K-Means fails
-                    hair_color = tuple(map(int, np.median(valid_pixels, axis=0)))
+                    # Find the darkest cluster among the top 2 largest
+                    # (hair is usually darker than background)
+                    top_2_clusters = unique[np.argsort(counts)[-2:]]
+                    cluster_centers = kmeans.cluster_centers_[top_2_clusters]
+                    cluster_brightness = np.mean(cluster_centers, axis=1)
+                    
+                    # Choose darker cluster
+                    darkest_idx = top_2_clusters[np.argmin(cluster_brightness)]
+                    hair_color = tuple(map(int, kmeans.cluster_centers_[darkest_idx]))
+                    
+                    print(f"Hair color (BGR): {hair_color}, Brightness: {np.mean(hair_color):.1f}")
+                except Exception as e:
+                    print(f"K-Means failed: {e}, using median")
+                    hair_color = tuple(map(int, np.median(final_pixels, axis=0)))
             else:
-                # Not enough valid pixels, use median of all
-                hair_color = tuple(map(int, np.median(all_hair_pixels, axis=0)))
+                # Very minimal pixels, use median of top region
+                hair_color = tuple(map(int, np.median(top_pixels, axis=0)))
+                print(f"Hair detection: Insufficient pixels, using median of all top pixels")
         else:
             hair_color = None
+            print("Hair detection: No top region available")
         
         # Store hair region for hair type detection (use top region)
         hair_region = hair_top if hair_top.size > 0 else None
@@ -616,7 +783,7 @@ def extract_features(image_path, visualize=True):
                 right_ear = calculate_ear(right_eye)
                 avg_ear = (left_ear + right_ear) / 2.0
                 
-                eyes_open = avg_ear > 0.2
+                eyes_open = avg_ear > 0.18  # Lowered threshold to reduce false "closed" detections
 
                 mouth_left = 61
                 mouth_right = 291
@@ -630,7 +797,7 @@ def extract_features(image_path, visualize=True):
                 
                 mouth_ratio = mouth_width / mouth_height if mouth_height > 0 else 0
                 
-                smiling = mouth_ratio > 2.8
+                smiling = mouth_ratio > 3.2  # Increased threshold to reduce false positives
                 
                 eye_color = extract_eye_color(image, landmarks, w, h)
                 emotion = analyze_emotion(eyes_open, smiling, mouth_ratio, avg_ear)
@@ -683,7 +850,7 @@ def extract_features(image_path, visualize=True):
             # Face color swatch - moved to panel
             swatch_size = 40
             cv2.rectangle(expanded_image, (panel_x, text_y), (panel_x + swatch_size, text_y + swatch_size),
-                         (int(face_color[2]), int(face_color[1]), int(face_color[0])), -1)
+                         (int(face_color[0]), int(face_color[1]), int(face_color[2])), -1)
             cv2.putText(expanded_image, "Face Color", (panel_x + swatch_size + 10, text_y + 25),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
             text_y += swatch_size + 15
@@ -691,7 +858,7 @@ def extract_features(image_path, visualize=True):
             # Hair color swatch
             if hair_color:
                 cv2.rectangle(expanded_image, (panel_x, text_y), (panel_x + swatch_size, text_y + swatch_size),
-                             (int(hair_color[2]), int(hair_color[1]), int(hair_color[0])),  -1)
+                             (int(hair_color[0]), int(hair_color[1]), int(hair_color[2])),  -1)
                 cv2.putText(expanded_image, "Hair Color", (panel_x + swatch_size + 10, text_y + 25),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
                 text_y += swatch_size + 20
@@ -737,6 +904,7 @@ def extract_features(image_path, visualize=True):
         features = {
             "face_color": face_color,
             "hair_color": hair_color,
+            "hair_color_name": classify_hair_color(hair_color),  # Add classified name
             "eyes_open": eyes_open,
             "smiling": smiling,
             "eye_color": eye_color,

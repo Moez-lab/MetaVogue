@@ -217,8 +217,44 @@ export const FeatureExtractorView = () => {
                                             <h4 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
                                                 <Icon name="Smile" size={16} className="text-purple-600" /> Facial Analysis
                                             </h4>
+
+                                            {/* Face Color with Swatch */}
+                                            {features?.face_color && (
+                                                <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 px-2 rounded-lg transition-colors">
+                                                    <span className="text-gray-500 dark:text-gray-400 font-medium">Face Color</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-700 shadow-sm"
+                                                            style={{
+                                                                backgroundColor: `rgb(${features.face_color[2]}, ${features.face_color[1]}, ${features.face_color[0]})`
+                                                            }}
+                                                        />
+                                                        <span className="font-semibold text-gray-900 dark:text-white font-mono text-sm">
+                                                            RGB({features.face_color[2]}, {features.face_color[1]}, {features.face_color[0]})
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Hair Color with Swatch */}
+                                            {features?.hair_color && (
+                                                <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 px-2 rounded-lg transition-colors">
+                                                    <span className="text-gray-500 dark:text-gray-400 font-medium">Hair Color</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-700 shadow-sm"
+                                                            style={{
+                                                                backgroundColor: `rgb(${features.hair_color[2]}, ${features.hair_color[1]}, ${features.hair_color[0]})`
+                                                            }}
+                                                        />
+                                                        <span className="font-semibold text-gray-900 dark:text-white font-mono">
+                                                            {features.hair_color_name || 'Unknown'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {renderMetricRow('Eye Color', features?.eye_color)}
-                                            {renderMetricRow('Hair Color', Array.isArray(features?.hair_color) ? `RGB(${features.hair_color.join(',')})` : 'Unknown')}
                                             {renderMetricRow('Expression', features?.emotion)}
                                             {renderMetricRow('Head Pitch', features?.head_pose?.pitch, 'deg')}
                                         </div>
