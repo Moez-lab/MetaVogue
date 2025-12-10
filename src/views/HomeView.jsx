@@ -202,9 +202,17 @@ export const HomeView = () => {
                                     <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl mb-4 relative group">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h4 className="font-bold text-cyan-600 dark:text-cyan-400">{activeProject.title}</h4>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">{activeProject.company} • {activeProject.id}</p>
-                                                <p className="text-[10px] text-slate-400 mt-1">Started: {new Date(activeProject.date).toLocaleString()}</p>
+                                                <h4 className="font-bold text-cyan-600 dark:text-cyan-400">{activeProject.title || 'Untitled Project'}</h4>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">{activeProject.company || 'Unknown Company'} • {activeProject.id}</p>
+                                                <p className="text-[10px] text-slate-400 mt-1">
+                                                    Started: {(() => {
+                                                        try {
+                                                            return activeProject.date ? new Date(activeProject.date).toLocaleString() : 'Unknown';
+                                                        } catch (e) {
+                                                            return 'Invalid Date';
+                                                        }
+                                                    })()}
+                                                </p>
                                             </div>
                                             <div className="flex flex-col items-end gap-2">
                                                 <span className="px-2 py-1 bg-cyan-500 text-white text-[10px] font-bold rounded-md uppercase">Active</span>
@@ -238,24 +246,24 @@ export const HomeView = () => {
                                         step="02"
                                         title="Generate 3D Model"
                                         desc="Base mesh generation from prompt"
-                                        status={activeProject.steps.model === 'done' ? 'done' : 'current'}
-                                        action={activeProject.steps.model === 'done' ? 'View' : 'Start'}
+                                        status={activeProject.steps?.model === 'done' ? 'done' : 'current'}
+                                        action={activeProject.steps?.model === 'done' ? 'View' : 'Start'}
                                         onClick={() => setCurrentView('model')}
                                     />
                                     <WorkflowStep
                                         step="03"
                                         title="Texture Synthesis"
                                         desc="AI-driven fabric mapping"
-                                        status={activeProject.steps.model === 'done' ? (activeProject.steps.texture === 'done' ? 'done' : 'current') : 'pending'}
-                                        action={activeProject.steps.texture === 'done' ? 'View' : 'Start'}
+                                        status={activeProject.steps?.model === 'done' ? (activeProject.steps?.texture === 'done' ? 'done' : 'current') : 'pending'}
+                                        action={activeProject.steps?.texture === 'done' ? 'View' : 'Start'}
                                         onClick={() => setCurrentView('texture')}
                                     />
                                     <WorkflowStep
                                         step="04"
                                         title="Upload Garment"
                                         desc="Image to 3D Shirt"
-                                        status={activeProject.steps.texture === 'done' ? (activeProject.steps.garment === 'done' ? 'done' : 'current') : 'pending'}
-                                        action={activeProject.steps.garment === 'done' ? 'View' : 'Start'}
+                                        status={activeProject.steps?.texture === 'done' ? (activeProject.steps?.garment === 'done' ? 'done' : 'current') : 'pending'}
+                                        action={activeProject.steps?.garment === 'done' ? 'View' : 'Start'}
                                         onClick={() => setCurrentView('upload')}
                                     />
                                 </>

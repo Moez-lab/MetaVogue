@@ -31,7 +31,7 @@ export const WorkTrackingView = () => {
     const [filterCompany, setFilterCompany] = useState('');
 
     // Derive unique companies for the dropdown
-    const companies = [...new Set(projects.map(p => p.company))].sort();
+    const companies = [...new Set(projects.filter(p => p.company).map(p => p.company))].sort();
 
     // Generate ID on mount if empty
     useEffect(() => {
@@ -131,7 +131,7 @@ export const WorkTrackingView = () => {
         const infoContent = `
 Project ID: ${project.id}
 Company: ${project.company}
-Date: ${new Date(project.date).toLocaleString()}
+Date: ${(() => { try { return project.date ? new Date(project.date).toLocaleString() : 'Unknown'; } catch (e) { return 'Invalid'; } })()}
 
 --- Shirt Description ---
 ${project.shirtDesc}
@@ -146,10 +146,10 @@ ${project.modelDesc}
         // we can't easily download old files from localStorage unless we stored them as Base64 (which has size limits).
         // For this demo, we'll add a placeholder note if files were "uploaded".
 
-        if (project.files.shirt) {
+        if (project.files?.shirt) {
             folder.file(`shirt_placeholder_${project.files.shirt}.txt`, "File was uploaded in session.");
         }
-        if (project.files.model) {
+        if (project.files?.model) {
             folder.file(`model_placeholder_${project.files.model}.txt`, "File was uploaded in session.");
         }
 
@@ -158,8 +158,8 @@ ${project.modelDesc}
     };
 
     const filteredProjects = projects.filter(p => {
-        const matchesSearch = p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.company.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (p.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (p.company || '').toLowerCase().includes(searchTerm.toLowerCase());
 
         // Date/Time Filter Logic
         let matchesDate = true;
@@ -410,14 +410,20 @@ ${project.modelDesc}
                                     </div>
                                     <div className="flex gap-2 text-[10px] text-slate-500 dark:text-slate-400 mb-2">
                                         <span className="flex items-center gap-1 bg-white dark:bg-black/20 px-2 py-1 rounded-md">
-                                            <Icon name="Shirt" size={10} /> {project.files.shirt ? 'File' : 'No File'}
+                                            <Icon name="Shirt" size={10} /> {project.files?.shirt ? 'File' : 'No File'}
                                         </span>
                                         <span className="flex items-center gap-1 bg-white dark:bg-black/20 px-2 py-1 rounded-md">
-                                            <Icon name="User" size={10} /> {project.files.model ? 'File' : 'No File'}
+                                            <Icon name="User" size={10} /> {project.files?.model ? 'File' : 'No File'}
                                         </span>
                                     </div>
                                     <p className="text-[10px] text-slate-400 text-right">
-                                        {new Date(project.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        {(() => {
+                                            try {
+                                                return project.date ? new Date(project.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date';
+                                            } catch (e) {
+                                                return 'Invalid Date';
+                                            }
+                                        })()}
                                     </p>
                                 </div>
                             ))

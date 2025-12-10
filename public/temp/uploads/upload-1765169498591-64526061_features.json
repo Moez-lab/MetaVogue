@@ -1,0 +1,50 @@
+{
+  "image_path": "C:\\Users\\mueez\\OneDrive\\Desktop\\web-meta\\public\\temp\\uploads\\upload-1765169498591-64526061.jpg",
+  "timestamp": "2025-12-08 09:52:42",
+  "features": {
+    "face_color": [
+      105,
+      137,
+      179
+    ],
+    "hair_color": [
+      31,
+      61,
+      73
+    ],
+    "hair_color_name": "Dark Brown",
+    "eyes_open": null,
+    "smiling": null,
+    "eye_color": "Unknown",
+    "emotion": "Unknown",
+    "head_pose": {
+      "yaw": 0,
+      "pitch": 0,
+      "roll": 0
+    },
+    "facial_hair": "Yes (Detected)",
+    "hair_length": "Short",
+    "hair_type": "Wavy",
+    "body_shape": "Inverted Triangle",
+    "gender": "Male",
+    "human_readable": {
+      "appearance": [
+        "Warm tan complexion (RGB(179, 137, 105))"
+      ],
+      "body_type": "",
+      "measurements_context": [],
+      "facial_features": [
+        "short dark brown (RGB(73, 61, 31)) softly wavy hair",
+        "styled facial hair"
+      ]
+    },
+    "body_measurements_cm": {
+      "shoulder_width_cm": 48.6,
+      "bust_cm": 75.4,
+      "waist_cm": 24.6,
+      "hips_cm": 29.0,
+      "height_cm": 170.0,
+      "conversion_ratio": 0.5513
+    }
+  }
+}

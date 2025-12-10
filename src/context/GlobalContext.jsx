@@ -99,8 +99,14 @@ export const GlobalProvider = ({ children }) => {
     });
 
     const [allProjects, setAllProjects] = useState(() => {
-        const saved = localStorage.getItem('work_projects');
-        return saved ? JSON.parse(saved) : [];
+        try {
+            const saved = localStorage.getItem('work_projects');
+            const parsed = saved ? JSON.parse(saved) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.error("Failed to parse work_projects", e);
+            return [];
+        }
     });
 
     useEffect(() => {
@@ -117,19 +123,21 @@ export const GlobalProvider = ({ children }) => {
 
     const createProject = (details) => {
         const newProject = {
-            ...details,
             status: 'active',
             steps: {
                 model: 'pending',
                 texture: 'pending',
                 garment: 'pending'
             },
+            date: new Date().toISOString(),
+            ...details, // Spread details later to allow overriding defaults if needed, but we typically want defaults. 
+            // Actually, we want details to override defaults if provided, but we want to be careful about nested objects like files.
             files: {
                 model: null,
                 shirt: null,
-                garment: null
-            },
-            date: new Date().toISOString()
+                garment: null,
+                ...(details.files || {}) // Merge provided files
+            }
         };
         setActiveProject(newProject);
         setAllProjects(prev => [newProject, ...prev]);
@@ -186,8 +194,14 @@ export const GlobalProvider = ({ children }) => {
 
     // Orders State (for Brandies)
     const [orders, setOrders] = useState(() => {
-        const saved = localStorage.getItem('brandies_orders');
-        return saved ? JSON.parse(saved) : [];
+        try {
+            const saved = localStorage.getItem('brandies_orders');
+            const parsed = saved ? JSON.parse(saved) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.error("Failed to parse brandies_orders", e);
+            return [];
+        }
     });
 
     useEffect(() => {
@@ -230,6 +244,23 @@ export const GlobalProvider = ({ children }) => {
         setOrders(prev => prev.filter(order => order.id !== id));
     };
 
+    const addOrderComment = (orderId, comment) => {
+        setOrders(prev => prev.map(order => {
+            if (order.id === orderId) {
+                const currentComments = order.comments || [];
+                return {
+                    ...order,
+                    comments: [...currentComments, {
+                        id: `CMT-${Date.now()}`,
+                        date: new Date().toISOString(),
+                        ...comment
+                    }]
+                };
+            }
+            return order;
+        }));
+    };
+
     return (
         <GlobalContext.Provider value={{
             theme,
@@ -258,6 +289,7 @@ export const GlobalProvider = ({ children }) => {
             addOrder,
             updateOrderStatus,
             deleteOrder,
+            addOrderComment,
             unreadNotifications,
             markNotificationsAsRead,
             users,

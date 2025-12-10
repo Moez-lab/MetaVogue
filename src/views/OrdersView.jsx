@@ -3,7 +3,7 @@ import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
 
 export const OrdersView = () => {
-    const { orders, updateOrderStatus, markNotificationsAsRead, deleteOrder } = useGlobal();
+    const { orders, updateOrderStatus, markNotificationsAsRead, deleteOrder, createProject, setCurrentView, addOrderComment } = useGlobal();
     const [showAcceptModal, setShowAcceptModal] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [estimatedDate, setEstimatedDate] = useState('');
@@ -14,9 +14,45 @@ export const OrdersView = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [dateSort, setDateSort] = useState('newest'); // 'newest' | 'oldest'
 
-    useEffect(() => {
-        markNotificationsAsRead();
-    }, []);
+    // Deliverable State
+    const [showDeliverableModal, setShowDeliverableModal] = useState(false);
+    const [deliverableFile, setDeliverableFile] = useState(null);
+    const [deliverableNote, setDeliverableNote] = useState('');
+
+    const handleOpenDeliverableModal = (orderId) => {
+        setSelectedOrderId(orderId);
+        setShowDeliverableModal(true);
+        setDeliverableFile(null);
+        setDeliverableNote('');
+    };
+
+    const handleUploadDeliverable = (e) => {
+        e.preventDefault();
+        if (selectedOrderId && deliverableFile) {
+            // In a real app, this would upload to S3/Storage
+            // Here we simulate by creating a fake URL or using the name
+            const fakeUrl = URL.createObjectURL(deliverableFile);
+
+            const newDeliverable = {
+                name: deliverableFile.name,
+                url: fakeUrl, // Temporary blob URL for demo
+                type: deliverableFile.type,
+                note: deliverableNote,
+                date: new Date().toISOString()
+            };
+
+            const order = orders.find(o => o.id === selectedOrderId);
+            const currentDeliverables = order.deliverables || [];
+
+            updateOrderStatus(selectedOrderId, order.status, {
+                deliverables: [...currentDeliverables, newDeliverable]
+            });
+
+            setShowDeliverableModal(false);
+            setSelectedOrderId(null);
+            setDeliverableFile(null);
+        }
+    };
 
     const handleOpenAcceptModal = (orderId, currentDate = null) => {
         setSelectedOrderId(orderId);
@@ -37,6 +73,20 @@ export const OrdersView = () => {
             setEstimatedDate('');
             setIsEditing(false);
         }
+    };
+
+    const handleStartProject = (order) => {
+        createProject({
+            id: `PRJ-${order.id.replace('ORD-', '')}`,
+            company: order.brandName || 'Brand',
+            shirtDesc: order.modelDescription || '',
+            modelDesc: order.referenceHeight ? `Height: ${order.referenceHeight}cm` : '',
+            files: {
+                shirt: order.shirtImage,
+                model: order.referenceImage
+            }
+        });
+        setCurrentView('home');
     };
 
     const getStatusColor = (status) => {
@@ -105,8 +155,8 @@ export const OrdersView = () => {
                             key={status}
                             onClick={() => setStatusFilter(status)}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-1 md:flex-none ${statusFilter === status
-                                    ? 'bg-white dark:bg-cyan-500/20 text-slate-900 dark:text-cyan-400 shadow-sm'
-                                    : 'text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300'
+                                ? 'bg-white dark:bg-cyan-500/20 text-slate-900 dark:text-cyan-400 shadow-sm'
+                                : 'text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             {status}
@@ -268,7 +318,7 @@ export const OrdersView = () => {
                                         </div>
 
                                         {/* Actions */}
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 flex-wrap">
                                             {/* Pending Approval Orders - Admin can Accept/Reject */}
                                             {(order.orderStatus === 'Pending Approval' || order.status === 'Pending') && (
                                                 <>
@@ -297,6 +347,24 @@ export const OrdersView = () => {
                                                 </button>
                                             )}
 
+                                            {/* Workflow Automation: Start Project from Accepted Order */}
+                                            {(order.orderStatus === 'Accepted' || order.status === 'Accepted') && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleStartProject(order)}
+                                                        className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                                                    >
+                                                        <Icon name="Play" size={14} /> Start Project
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleOpenDeliverableModal(order.id)}
+                                                        className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                                                    >
+                                                        <Icon name="UploadCloud" size={14} /> Deliverable
+                                                    </button>
+                                                </>
+                                            )}
+
                                             {/* Accepted but Unpaid - Show payment pending */}
                                             {(order.orderStatus === 'Accepted' || order.status === 'Accepted') && order.paymentStatus === 'Unpaid' && (
                                                 <div className="px-3 py-1.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 rounded-lg text-xs font-bold flex items-center gap-1">
@@ -321,6 +389,60 @@ export const OrdersView = () => {
                                         <p className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                                             {order.modelDescription}
                                         </p>
+                                        {/* Comments Section */}
+                                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                                            <h4 className="text-xs font-bold text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Comments</h4>
+
+                                            {/* Comment List */}
+                                            {order.comments && order.comments.length > 0 ? (
+                                                <div className="space-y-3 mb-4 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                                    {order.comments.map((comment) => (
+                                                        <div key={comment.id} className={`flex gap-3 ${comment.author === 'Admin' ? 'flex-row-reverse' : ''}`}>
+                                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${comment.author === 'Admin' ? 'bg-purple-500' : 'bg-blue-500'}`}>
+                                                                {comment.author === 'Admin' ? 'A' : 'C'}
+                                                            </div>
+                                                            <div className={`p-2 rounded-xl text-xs max-w-[80%] ${comment.author === 'Admin'
+                                                                ? 'bg-purple-500 text-white rounded-tr-none'
+                                                                : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-gray-300 rounded-tl-none'}`}>
+                                                                <p>{comment.text}</p>
+                                                                <p className={`text-[10px] mt-1 ${comment.author === 'Admin' ? 'text-purple-200' : 'text-slate-400 dark:text-gray-500'}`}>
+                                                                    {new Date(comment.date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-slate-400 dark:text-gray-600 italic mb-4">No comments yet.</p>
+                                            )}
+
+                                            {/* Add Comment */}
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Type a message..."
+                                                    className="flex-1 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 transition-all"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && e.target.value.trim()) {
+                                                            addOrderComment(order.id, { text: e.target.value, author: 'Admin' });
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                                                    onClick={(e) => {
+                                                        const input = e.currentTarget.previousElementSibling;
+                                                        if (input.value.trim()) {
+                                                            addOrderComment(order.id, { text: input.value, author: 'Admin' });
+                                                            input.value = '';
+                                                        }
+                                                    }}
+                                                >
+                                                    <Icon name="Send" size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -371,6 +493,61 @@ export const OrdersView = () => {
                                 {isEditing ? 'Update Date' : 'Accept & Send'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Deliverable Upload Modal */}
+            {showDeliverableModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500"></div>
+
+                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            <Icon name="UploadCloud" className="text-purple-500" />
+                            Upload Deliverable
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                            Upload final files for the client (GLB, MP4, PNG).
+                        </p>
+
+                        <form onSubmit={handleUploadDeliverable} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select File</label>
+                                <input
+                                    type="file"
+                                    required
+                                    onChange={(e) => setDeliverableFile(e.target.files[0])}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Note (Optional)</label>
+                                <textarea
+                                    value={deliverableNote}
+                                    onChange={(e) => setDeliverableNote(e.target.value)}
+                                    placeholder="Add a message for the client..."
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-purple-500 h-24 resize-none"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 justify-end pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowDeliverableModal(false)}
+                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-sm font-bold transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!deliverableFile}
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-colors shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                                >
+                                    Upload & Send
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
