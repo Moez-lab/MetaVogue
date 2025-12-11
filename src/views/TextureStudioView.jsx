@@ -7,7 +7,7 @@ import { meshyService } from '../services/meshy';
 export const TextureStudioView = () => {
     const { modelImage, setModelImage, updateProjectAsset } = useGlobal();
     const [textureUrl, setTextureUrl] = useState(null);
-    const [gender, setGender] = useState("Female");
+
     const [texturePrompt, setTexturePrompt] = useState("3D character base mesh, T-pose, realistic human skin texture, long light brown hair, smooth anatomy, non-explicit, anatomical study model, 4k texture, unreal engine style, photorealistic face");
     const [isGenerating, setIsGenerating] = useState(false);
 
@@ -87,7 +87,7 @@ export const TextureStudioView = () => {
 
             // 1. Construct Enhanced Prompt with Safety & Gender
             const safetyEnforcement = "wearing solid opaque beige sports bra and panties, thick cotton fabric, no transparency, modest coverage, safe for work";
-            const finalPrompt = `${gender} character, ${texturePrompt}, ${safetyEnforcement}`;
+            const finalPrompt = `${texturePrompt}, ${safetyEnforcement}`;
             console.log("Sending Prompt:", finalPrompt);
 
             // 2. Create Retexture Task
@@ -217,96 +217,84 @@ export const TextureStudioView = () => {
                             )}
 
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold uppercase text-purple-600 dark:text-purple-400 tracking-wider flex items-center gap-2">
-                                        <Icon name="Palette" size={14} /> Texture Prompt
-                                    </label>
-                                    <div className="flex bg-slate-100 dark:bg-black/20 rounded-lg p-1">
-                                        {['Female', 'Male'].map(g => (
-                                            <button
-                                                key={g}
-                                                onClick={() => setGender(g)}
-                                                className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${gender === g ? 'bg-white dark:bg-purple-500 text-purple-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300'}`}
-                                            >
-                                                {g}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <textarea
-                                    value={texturePrompt}
-                                    onChange={(e) => setTexturePrompt(e.target.value)}
-                                    className="w-full h-32 bg-white dark:bg-[#050b14] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm outline-none focus:border-purple-500/50 transition-all resize-none"
-                                    placeholder="Describe the material (e.g., worn leather, holographic metal)..."
-                                />
-                                <button
-                                    onClick={handleApplyTexture}
-                                    disabled={!modelImage || isGenerating}
-                                    className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-                                >
-                                    {isGenerating ? (
-                                        <>
-                                            <Icon name="Loader" className="animate-spin" size={20} /> Applying...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Icon name="Sparkles" size={20} /> Generate Texture
-                                        </>
-                                    )}
-                                </button>
+                                <label className="text-xs font-bold uppercase text-purple-600 dark:text-purple-400 tracking-wider flex items-center gap-2">
+                                    <Icon name="Palette" size={14} /> Texture Prompt
+                                </label>
 
-                                {modelImage && !isGenerating && (
-                                    <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-3">
-                                        <p className="text-xs font-bold uppercase text-slate-500 dark:text-gray-400 tracking-wider">
-                                            Download Options
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <button
-                                                onClick={() => handleDownload('fbx')}
-                                                className="col-span-2 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all group"
-                                            >
-                                                <span className="flex items-center justify-center translate-x-6 w-8 p-2 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors">
-                                                    <Icon name="Download" size={22} />
-                                                </span>
-                                                <span>Download FBX (Recommended)</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleDownload('glb')}
-                                                className="py-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-white rounded-lg font-bold text-xs transition-all"
-                                            >
-                                                .GLB
-                                            </button>
-                                            <button
-                                                onClick={() => handleDownload('obj')}
-                                                className="py-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-white rounded-lg font-bold text-xs transition-all"
-                                            >
-                                                .OBJ
-                                            </button>
-                                        </div>
-                                    </div>
+                            <textarea
+                                value={texturePrompt}
+                                onChange={(e) => setTexturePrompt(e.target.value)}
+                                className="w-full h-32 bg-white dark:bg-[#050b14] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm outline-none focus:border-purple-500/50 transition-all resize-none"
+                                placeholder="Describe the material (e.g., worn leather, holographic metal)..."
+                            />
+                            <button
+                                onClick={handleApplyTexture}
+                                disabled={!modelImage || isGenerating}
+                                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                            >
+                                {isGenerating ? (
+                                    <>
+                                        <Icon name="Loader" className="animate-spin" size={20} /> Applying...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Icon name="Sparkles" size={20} /> Generate Texture
+                                    </>
                                 )}
-                            </div>
-                        </div>
-                    </div>
+                            </button>
 
-                    {/* Preview */}
-                    <div className="lg:col-span-2">
-                        <div className="w-full h-full min-h-[500px] bg-white dark:bg-[#0a0f18] rounded-3xl border border-slate-200 dark:border-white/10 flex items-center justify-center relative overflow-hidden">
-                            {/* Grid Overlay */}
-                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
-
-                            {modelImage ? (
-                                <ModelViewer url={modelImage} textureUrl={textureUrl} />
-                            ) : (
-                                <div className="text-center text-slate-500 dark:text-gray-500">
-                                    <Icon name="Cube" size={48} className="mx-auto mb-4 opacity-20" />
-                                    <p>Load a model to start texturing</p>
+                            {modelImage && !isGenerating && (
+                                <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-3">
+                                    <p className="text-xs font-bold uppercase text-slate-500 dark:text-gray-400 tracking-wider">
+                                        Download Options
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => handleDownload('fbx')}
+                                            className="col-span-2 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all group"
+                                        >
+                                            <span className="flex items-center justify-center translate-x-6 w-8 p-2 h-8 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors">
+                                                <Icon name="Download" size={22} />
+                                            </span>
+                                            <span>Download FBX (Recommended)</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDownload('glb')}
+                                            className="py-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-white rounded-lg font-bold text-xs transition-all"
+                                        >
+                                            .GLB
+                                        </button>
+                                        <button
+                                            onClick={() => handleDownload('obj')}
+                                            className="py-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-white rounded-lg font-bold text-xs transition-all"
+                                        >
+                                            .OBJ
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
+
+                {/* Preview */}
+                <div className="lg:col-span-2">
+                    <div className="w-full h-full min-h-[500px] bg-white dark:bg-[#0a0f18] rounded-3xl border border-slate-200 dark:border-white/10 flex items-center justify-center relative overflow-hidden">
+                        {/* Grid Overlay */}
+                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+
+                        {modelImage ? (
+                            <ModelViewer url={modelImage} textureUrl={textureUrl} />
+                        ) : (
+                            <div className="text-center text-slate-500 dark:text-gray-500">
+                                <Icon name="Cube" size={48} className="mx-auto mb-4 opacity-20" />
+                                <p>Load a model to start texturing</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
+        </div >
     );
 };

@@ -37,6 +37,21 @@ export const ModelStudioView = () => {
         }
     };
 
+    const handleTagClick = (tag) => {
+        const regex = new RegExp(`\\b${tag}\\b`, 'i');
+        if (!regex.test(prompt)) {
+            setPrompt(prev => prev ? `${prev}, ${tag}` : tag);
+        } else {
+            // Remove tag, handling preceding comma if present
+            setPrompt(prev => {
+                const newPrompt = prev.replace(new RegExp(`(, )?\\b${tag}\\b`, 'i'), '')
+                    .replace(/^, /, '') // Fix leading comma if first item was removed
+                    .trim();
+                return newPrompt;
+            });
+        }
+    };
+
     // Poll for status
     useEffect(() => {
         let interval;
@@ -164,11 +179,21 @@ export const ModelStudioView = () => {
                             />
 
                             <div className="mt-4 flex flex-wrap gap-2 relative z-10">
-                                {['Female', 'Male', 'T-Pose', 'Cyberpunk', 'Realistic'].map(tag => (
-                                    <button key={tag} className="px-3 py-1 text-xs font-medium rounded-full border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                                        {tag}
-                                    </button>
-                                ))}
+                                {['Female', 'Male', 'T-Pose', 'Cyberpunk', 'Realistic'].map(tag => {
+                                    const isActive = new RegExp(`\\b${tag}\\b`, 'i').test(prompt);
+                                    return (
+                                        <button
+                                            key={tag}
+                                            onClick={() => handleTagClick(tag)}
+                                            className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${isActive
+                                                    ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                                                    : 'border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                                                }`}
+                                        >
+                                            {tag}
+                                        </button>
+                                    )
+                                })}
                             </div>
 
                             <div className="flex gap-2 mt-8">
@@ -224,7 +249,7 @@ export const ModelStudioView = () => {
                                 </div>
                             ) : result ? (
                                 <div className="relative w-full h-full group/preview">
-                                    <ModelViewer modelUrl={result} />
+                                    <ModelViewer url={result} />
 
                                     {/* Overlay Actions */}
                                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 pointer-events-none">

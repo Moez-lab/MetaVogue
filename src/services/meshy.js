@@ -1,10 +1,10 @@
-const API_KEY = 'msy_YzYiQ6nwRh9y6dvMdWwEP1s7fTzjSOJZLOgd';
+const API_KEY = 'msy_yPRISWzbsu85iNDaZQCLcVASdBbuXryFNqci';
 
 export const meshyService = {
     async createTextTo3D(prompt) {
         // Strict T-Pose enforcement
-        const tPoseEnforcement = "in strict T-pose, arms outstretched 90 degrees, symmetrical, standing straight";
-        const enhancedPrompt = `${tPoseEnforcement}, ${prompt}, wearing basic underwear, bra and panties, minimal clothing, fashion mannequin style, high quality, 4k texture, ${tPoseEnforcement}`;
+        const tPoseEnforcement = "in strict T-pose, arms outstretched 90 degrees, symmetrical, standing straight, must only in undergarments";
+        const enhancedPrompt = `${tPoseEnforcement}, ${prompt}, wearing basic underwear,must only in undergarments only if male then only underwear if model is female then must be in bra and underwear,no shoes and socks, fashion mannequin style, high quality, 4k texture, ${tPoseEnforcement}`;
 
         const response = await fetch('https://api.meshy.ai/v2/text-to-3d', {
             method: 'POST',
