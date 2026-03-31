@@ -45,13 +45,30 @@ Apply AI-generated materials to any 3D model.
    npm install
    ```
 
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
+## ▶️ How to Run
 
-4. **Open your browser**
-   Navigate to `http://localhost:5173` to launch the application.
+### Frontend
+
+Run from the **project root** — Vite serves the `frontend/` directory:
+
+```bash
+npm run dev
+```
+
+Open your browser and navigate to `http://localhost:5173`.
+
+---
+
+### Backend
+
+The Express server runs on **port 3001**. Start it from the `backend/` folder:
+
+```bash
+cd backend
+start-server.bat
+```
+
+> **Note:** `start-server.bat` is a Windows batch script that launches the Express API. Make sure Node.js is installed and dependencies are set up before running it.
 
 ## 🛠️ Tech Stack
 
@@ -66,12 +83,54 @@ Apply AI-generated materials to any 3D model.
 ## 📦 Project Structure
 
 ```
-src/
-├── components/     # Reusable UI & 3D components (ModelViewer, etc.)
-├── context/        # Global state management
-├── services/       # API integrations (Meshy AI)
-├── views/          # Main application pages (UploadStudio, TextureStudio)
-└── App.jsx         # Main entry point
+web-meta/
+│
+├── 🎨 frontend/                    # React / Vite Application
+│   ├── public/                     # Static assets served directly
+│   │   └── temp/uploads/           # Temp folder for AI-processed images
+│   ├── src/
+│   │   ├── assets/                 # Images, logos, fonts
+│   │   ├── components/             # Reusable UI components (Sidebar, TopBar, Icon…)
+│   │   ├── context/                # Global state (GlobalContext.jsx)
+│   │   ├── services/               # API integrations (Meshy AI)
+│   │   ├── utils/                  # Helper functions
+│   │   ├── views/
+│   │   │   ├── admin/              # 🔐 Admin-only pages
+│   │   │   │   ├── HomeView.jsx
+│   │   │   │   ├── OrdersView.jsx
+│   │   │   │   ├── AdminUsersView.jsx
+│   │   │   │   ├── WorkTrackingView.jsx
+│   │   │   │   └── AnalyticsView.jsx
+│   │   │   ├── customer/           # 👤 Customer-facing pages
+│   │   │   │   ├── BrandiesView.jsx
+│   │   │   │   └── MyOrdersView.jsx
+│   │   │   ├── LandingView.jsx     # 🌐 Public landing page
+│   │   │   ├── LoginView.jsx
+│   │   │   ├── ModelStudioView.jsx # 🛠️ Shared tool pages
+│   │   │   ├── UploadStudioView.jsx
+│   │   │   ├── VideoStudioView.jsx
+│   │   │   ├── TextureStudioView.jsx
+│   │   │   ├── FeatureExtractorView.jsx
+│   │   │   └── NanoBananaView.jsx
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   └── index.html
+│
+├── ⚙️ backend/                     # Express Server + Python AI
+│   ├── server/
+│   │   └── index.js                # Express API — runs on port 3001
+│   ├── feature-extractor/          # Python AI feature extraction scripts
+│   │   ├── feature-extraction.py
+│   │   ├── requirements.txt
+│   │   └── …
+│   └── start-server.bat            # Script to start the backend (Windows)
+│
+├── vite.config.js                  # Vite config (root: ./frontend)
+├── package.json                    # Node dependencies (frontend + backend)
+├── postcss.config.js
+├── eslint.config.js
+└── README.md
 ```
 
 ## 🤝 Contributing

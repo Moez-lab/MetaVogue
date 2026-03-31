@@ -1,0 +1,50 @@
+{
+  "image_path": "C:\\Users\\mueez\\OneDrive\\Desktop\\FYP\\web-meta\\frontend\\public\\temp\\uploads\\upload-1774942613429-122731475.jpg",
+  "timestamp": "2026-03-31 12:38:02",
+  "features": {
+    "face_color": [
+      121,
+      144,
+      204
+    ],
+    "hair_color": [
+      26,
+      31,
+      50
+    ],
+    "hair_color_name": "Black",
+    "eyes_open": null,
+    "smiling": null,
+    "eye_color": "Unknown",
+    "emotion": "Unknown",
+    "head_pose": {
+      "yaw": 0,
+      "pitch": 0,
+      "roll": 0
+    },
+    "facial_hair": "Yes (Detected)",
+    "hair_length": "Medium",
+    "hair_type": "Wavy",
+    "body_shape": "Inverted Triangle",
+    "gender": "Male",
+    "human_readable": {
+      "appearance": [
+        "Warm beige skin tone (RGB(204, 144, 121))"
+      ],
+      "body_type": "",
+      "measurements_context": [],
+      "facial_features": [
+        "medium-length black (RGB(50, 31, 26)) softly wavy hair",
+        "styled facial hair"
+      ]
+    },
+    "body_measurements_cm": {
+      "shoulder_width_cm": 32.7,
+      "bust_cm": 50.8,
+      "waist_cm": 17.3,
+      "hips_cm": 20.3,
+      "height_cm": 170.0,
+      "conversion_ratio": 0.836
+    }
+  }
+}
