@@ -11,24 +11,19 @@ export const LoginView = ({ onBack }) => {
     const [name, setName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Mock login - accept any credentials for now
-        login({ name: name || 'User', email });
-
-        // Navigation is now handled in useEffect or we can check the user object immediately if it was synchronous, 
-        // but since state updates are async, we might need to rely on the updated user state or just check the email directly here for the redirect logic.
-        // However, the context's login function updates the state. 
-        // Let's check the email directly for the immediate redirect decision to be snappy.
-
-        // Re-check admin logic to match context
-        const isAdmin = email.toLowerCase() === 'mueezzakir6@gmail.com' ||
-            (JSON.parse(localStorage.getItem('app_users') || '[]').find(u => u.email.toLowerCase() === email.toLowerCase())?.isAdmin);
-
-        if (isAdmin) {
-            setCurrentView('home');
-        } else {
-            setCurrentView('brandies');
+        try {
+            const loggedInUser = await login({ name: name || 'User', email, password });
+            
+            if (loggedInUser?.isAdmin) {
+                setCurrentView('home');
+            } else {
+                setCurrentView('brandies');
+            }
+        } catch (err) {
+            console.error("Login Error:", err);
+            // Error is already alerted in GlobalContext temporarily
         }
     };
 

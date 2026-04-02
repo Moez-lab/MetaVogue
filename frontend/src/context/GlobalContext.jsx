@@ -1,4 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import {
+    loginUser, fetchUsers, toggleUserAdmin,
+    fetchProjects, createProjectDB, updateProjectDB, deleteProjectDB,
+    fetchOrders, createOrderDB, updateOrderDB, deleteOrderDB, addOrderCommentDB
+} from '../services/api';
 
 const GlobalContext = createContext();
 
@@ -12,288 +17,259 @@ export const GlobalProvider = ({ children }) => {
     const [generatedVideo, setGeneratedVideo] = useState(null);
 
     // Auth State
-    const [user, setUser] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    // User Management State (Mock Backend)
-    const [users, setUsers] = useState(() => {
-        const saved = localStorage.getItem('app_users');
-        return saved ? JSON.parse(saved) : [];
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('user_profile');
+        return saved ? JSON.parse(saved) : null;
     });
+    const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('token'));
+    const [users, setUsers] = useState([]);
 
-    useEffect(() => {
-        localStorage.setItem('app_users', JSON.stringify(users));
-    }, [users]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light');
-    };
-
-    const login = (userData) => {
-        const email = userData.email.toLowerCase();
-
-        // Always refresh users from localStorage to handle multi-tab/window updates
-        const storedUsers = JSON.parse(localStorage.getItem('app_users') || '[]');
-        // Update state if different (optional, but good for consistency)
-        if (JSON.stringify(storedUsers) !== JSON.stringify(users)) {
-            setUsers(storedUsers);
-        }
-
-        let currentUser = storedUsers.find(u => u.email.toLowerCase() === email);
-
-        if (!currentUser) {
-            // New User Registration
-            currentUser = {
-                ...userData,
-                email: email,
-                isAdmin: email === 'mueezzakir6@gmail.com', // Hardcoded Admin
-                joinedAt: new Date().toISOString()
-            };
-            const newUsers = [...storedUsers, currentUser];
-            setUsers(newUsers);
-            localStorage.setItem('app_users', JSON.stringify(newUsers));
-        } else {
-            // Existing User - Update details if needed, but keep admin status
-            // Ensure hardcoded admin is always admin
-            if (email === 'mueezzakir6@gmail.com' && !currentUser.isAdmin) {
-                currentUser.isAdmin = true;
-                const updatedUsers = storedUsers.map(u => u.email === email ? { ...u, isAdmin: true } : u);
-                setUsers(updatedUsers);
-                localStorage.setItem('app_users', JSON.stringify(updatedUsers));
-            }
-        }
-
-        setUser(currentUser);
-        setIsAuthenticated(true);
-    };
-
-    const logout = () => {
-        setUser(null);
-        setIsAuthenticated(false);
-        setCurrentView('home'); // Reset view on logout
-    };
-
-    const toggleAdmin = (targetEmail) => {
-        if (!user || !user.isAdmin) return; // Only admins can toggle
-
-        setUsers(prev => prev.map(u => {
-            if (u.email.toLowerCase() === targetEmail.toLowerCase()) {
-                return { ...u, isAdmin: !u.isAdmin };
-            }
-            return u;
-        }));
-    };
-
-    useEffect(() => {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [theme]);
-
-    // Project State
+    // Projects State
+    const [allProjects, setAllProjects] = useState([]);
     const [activeProject, setActiveProject] = useState(() => {
         const saved = localStorage.getItem('active_project');
         return saved ? JSON.parse(saved) : null;
     });
 
-    const [allProjects, setAllProjects] = useState(() => {
+    // Orders State
+    const [orders, setOrders] = useState([]);
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+    // Fetch initial DB data
+    const loadDBData = async () => {
         try {
-            const saved = localStorage.getItem('work_projects');
-            const parsed = saved ? JSON.parse(saved) : [];
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            console.error("Failed to parse work_projects", e);
-            return [];
+            const [usersData, projectsData, ordersData] = await Promise.all([
+                fetchUsers().catch(() => []),
+                fetchProjects().catch(() => []),
+                fetchOrders().catch(() => [])
+            ]);
+            setUsers(Array.isArray(usersData) ? usersData : []);
+            setAllProjects(Array.isArray(projectsData) ? projectsData : []);
+            setOrders(Array.isArray(ordersData) ? ordersData : []);
+        } catch (error) {
+            console.error("Failed to sync DB:", error);
         }
-    });
+    };
 
     useEffect(() => {
-        if (activeProject) {
-            localStorage.setItem('active_project', JSON.stringify(activeProject));
-        } else {
-            localStorage.removeItem('active_project');
+        // Load data on startup if logged in
+        if (isAuthenticated) {
+            loadDBData();
         }
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (activeProject) localStorage.setItem('active_project', JSON.stringify(activeProject));
+        else localStorage.removeItem('active_project');
     }, [activeProject]);
 
     useEffect(() => {
-        localStorage.setItem('work_projects', JSON.stringify(allProjects));
-    }, [allProjects]);
+        if (user) localStorage.setItem('user_profile', JSON.stringify(user));
+        else localStorage.removeItem('user_profile');
+    }, [user]);
 
-    const createProject = (details) => {
-        const newProject = {
-            status: 'active',
-            steps: {
-                model: 'pending',
-                texture: 'pending',
-                garment: 'pending'
-            },
-            date: new Date().toISOString(),
-            ...details, // Spread details later to allow overriding defaults if needed, but we typically want defaults. 
-            // Actually, we want details to override defaults if provided, but we want to be careful about nested objects like files.
-            files: {
-                model: null,
-                shirt: null,
-                garment: null,
-                ...(details.files || {}) // Merge provided files
-            }
-        };
-        setActiveProject(newProject);
-        setAllProjects(prev => [newProject, ...prev]);
-        return newProject;
-    };
-
-    const updateProjectAsset = (type, url, description = '') => {
-        if (!activeProject) return;
-
-        setActiveProject(prev => {
-            const updated = {
-                ...prev,
-                steps: {
-                    ...prev.steps,
-                    [type]: 'done'
-                },
-                files: {
-                    ...prev.files,
-                    [type]: url
-                },
-                // Update description if provided (e.g. from prompt)
-                [`${type}Desc`]: description ? `${prev.id} ${description}` : prev[`${type}Desc`]
-            };
-
-            // Also update in allProjects list
-            setAllProjects(all => all.map(p => p.id === updated.id ? updated : p));
-
-            return updated;
-        });
-    };
-
-    const cancelProject = () => {
-        setActiveProject(null);
-    };
-
-    const deleteProject = (id) => {
-        setAllProjects(prev => prev.filter(p => p.id !== id));
-        if (activeProject && activeProject.id === id) {
-            setActiveProject(null);
-        }
-    };
-
-    const resumeProject = (project) => {
-        setActiveProject(project);
-        // Navigation to home is handled by the caller via useNavigate
-    };
-
-    const editProject = (id, updatedDetails) => {
-        setAllProjects(prev => prev.map(p => p.id === id ? { ...p, ...updatedDetails } : p));
-        if (activeProject && activeProject.id === id) {
-            setActiveProject(prev => ({ ...prev, ...updatedDetails }));
-        }
-    };
-
-    // Orders State (for Brandies)
-    const [orders, setOrders] = useState(() => {
-        try {
-            const saved = localStorage.getItem('brandies_orders');
-            const parsed = saved ? JSON.parse(saved) : [];
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            console.error("Failed to parse brandies_orders", e);
-            return [];
-        }
-    });
-
-    useEffect(() => {
-        localStorage.setItem('brandies_orders', JSON.stringify(orders));
-    }, [orders]);
-
-    const [unreadNotifications, setUnreadNotifications] = useState(() => {
-        return orders.filter(order => order.read === false).length;
-    });
-
-    // Update unread count when orders change (specifically for new orders)
     useEffect(() => {
         setUnreadNotifications(orders.filter(order => order.read === false).length);
     }, [orders]);
 
-    const addOrder = (orderData) => {
+    useEffect(() => {
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+    }, [theme]);
+
+    const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+    // ================== AUTH ==================
+    const login = async (userData) => {
+        try {
+            // Send to backend (creates user if doesn't exist, else logs in)
+            const res = await loginUser(userData.email, 'password', userData.name || 'User');
+            localStorage.setItem('token', res.token);
+            setUser(res.user);
+            setIsAuthenticated(true);
+            await loadDBData(); // Sync DB right after login
+            return res.user;
+        } catch (error) {
+            console.error("Login failed:", error);
+            // Fallback for UI if backend is down while testing
+            alert(`Backend Login Failed: Ensure the Docker DB and backend server are running on port 3001.\nError: ${error.message}`);
+        }
+    };
+
+    const logout = () => {
+        setUser(null);
+        setIsAuthenticated(false);
+        setCurrentView('home');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_profile');
+        setAllProjects([]);
+        setOrders([]);
+    };
+
+    const toggleAdmin = async (targetEmail) => {
+        if (!user || !user.isAdmin) return;
+        try {
+            const res = await toggleUserAdmin(targetEmail);
+            setUsers(prev => prev.map(u => u.email === targetEmail ? { ...u, isAdmin: res.isAdmin } : u));
+        } catch (err) {
+            console.error("Toggle admin failed:", err);
+        }
+    };
+
+    // ================== PROJECTS ==================
+    const createProject = async (details) => {
+        const newProject = {
+            id: `PRJ-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+            userEmail: user?.email || 'guest',
+            status: 'active',
+            steps: { model: 'pending', texture: 'pending', garment: 'pending' },
+            date: new Date().toISOString(),
+            ...details,
+            files: { model: null, shirt: null, garment: null, ...(details.files || {}) }
+        };
+
+        // Optimistic UI update
+        setActiveProject(newProject);
+        setAllProjects(prev => [newProject, ...prev]);
+
+        try {
+            await createProjectDB(newProject);
+        } catch (err) {
+            console.error("Failed to save project to DB:", err);
+        }
+        return newProject;
+    };
+
+    const updateProjectAsset = async (type, url, description = '') => {
+        if (!activeProject) return;
+
+        let updatedProject = null;
+        setActiveProject(prev => {
+            updatedProject = {
+                ...prev,
+                steps: { ...prev.steps, [type]: 'done' },
+                files: { ...prev.files, [type]: url },
+                [`${type}Desc`]: description ? `${prev.id} ${description}` : prev[`${type}Desc`]
+            };
+            return updatedProject;
+        });
+
+        // Also update in allProjects list
+        setAllProjects(all => all.map(p => p.id === activeProject.id ? updatedProject : p));
+
+        try {
+            await updateProjectDB(activeProject.id, updatedProject);
+        } catch (err) {
+            console.error("Failed to update project asset in DB:", err);
+        }
+    };
+
+    const editProject = async (id, updatedDetails) => {
+        setAllProjects(prev => prev.map(p => p.id === id ? { ...p, ...updatedDetails } : p));
+        if (activeProject && activeProject.id === id) {
+            setActiveProject(prev => ({ ...prev, ...updatedDetails }));
+        }
+
+        try {
+            await updateProjectDB(id, updatedDetails);
+        } catch (err) {
+            console.error("Failed to edit project DB:", err);
+        }
+    };
+
+    const deleteProject = async (id) => {
+        setAllProjects(prev => prev.filter(p => p.id !== id));
+        if (activeProject && activeProject.id === id) setActiveProject(null);
+
+        try {
+            await deleteProjectDB(id);
+        } catch (err) {
+            console.error("Failed to delete project DB:", err);
+        }
+    };
+
+    const cancelProject = () => setActiveProject(null);
+    const resumeProject = (project) => setActiveProject(project);
+
+    // ================== ORDERS ==================
+    const addOrder = async (orderData) => {
         const newOrder = {
             id: `ORD-${Date.now()}`,
+            brandEmail: user?.email || 'guest',
             date: new Date().toISOString(),
             status: 'Pending',
+            paymentStatus: 'Unpaid',
             read: false,
+            comments: [],
             ...orderData
         };
+
         setOrders(prev => [newOrder, ...prev]);
+
+        try {
+            await createOrderDB(newOrder);
+        } catch (err) {
+            console.error("Failed to save order to DB:", err);
+        }
         return newOrder;
     };
 
-    const markNotificationsAsRead = () => {
+    const markNotificationsAsRead = async () => {
+        const unread = orders.filter(o => !o.read);
         setOrders(prev => prev.map(order => ({ ...order, read: true })));
         setUnreadNotifications(0);
+
+        try {
+            await Promise.all(unread.map(o => updateOrderDB(o.id, { read: true })));
+        } catch (err) {
+            console.error("Failed to clear DB unread notifications:", err);
+        }
     };
 
-    const updateOrderStatus = (id, status, additionalData = {}) => {
-        setOrders(prev => prev.map(order =>
-            order.id === id ? { ...order, status, ...additionalData } : order
-        ));
+    const updateOrderStatus = async (id, status, additionalData = {}) => {
+        const updates = { status, ...additionalData };
+        setOrders(prev => prev.map(order => order.id === id ? { ...order, ...updates } : order));
+
+        try {
+            await updateOrderDB(id, updates);
+        } catch (err) {
+            console.error("Failed to update DB Order Status:", err);
+        }
     };
 
-    const deleteOrder = (id) => {
+    const deleteOrder = async (id) => {
         setOrders(prev => prev.filter(order => order.id !== id));
+        try {
+            await deleteOrderDB(id);
+        } catch (err) {
+            console.error("Failed to delete DB Order:", err);
+        }
     };
 
-    const addOrderComment = (orderId, comment) => {
+    const addOrderComment = async (orderId, comment) => {
+        const newComment = { id: `CMT-${Date.now()}`, date: new Date().toISOString(), ...comment };
+        
         setOrders(prev => prev.map(order => {
             if (order.id === orderId) {
-                const currentComments = order.comments || [];
-                return {
-                    ...order,
-                    comments: [...currentComments, {
-                        id: `CMT-${Date.now()}`,
-                        date: new Date().toISOString(),
-                        ...comment
-                    }]
-                };
+                return { ...order, comments: [...(order.comments || []), newComment] };
             }
             return order;
         }));
+
+        try {
+            await addOrderCommentDB(orderId, newComment);
+        } catch (err) {
+            console.error("Failed to push comment to DB:", err);
+        }
     };
 
     return (
         <GlobalContext.Provider value={{
-            theme,
-            toggleTheme,
-            currentView,
-            setCurrentView,
-            modelImage,
-            setModelImage,
-            shirtImage,
-            setShirtImage,
-            generatedVideo,
-            setGeneratedVideo,
-            user,
-            isAuthenticated,
-            login,
-            logout,
-            activeProject,
-            createProject,
-            updateProjectAsset,
-            cancelProject,
-            deleteProject,
-            resumeProject,
-            editProject,
-            allProjects,
-            orders,
-            addOrder,
-            updateOrderStatus,
-            deleteOrder,
-            addOrderComment,
-            unreadNotifications,
-            markNotificationsAsRead,
-            users,
-            toggleAdmin
+            theme, toggleTheme, currentView, setCurrentView,
+            modelImage, setModelImage, shirtImage, setShirtImage, generatedVideo, setGeneratedVideo,
+            user, isAuthenticated, login, logout, users, toggleAdmin,
+            activeProject, createProject, updateProjectAsset, cancelProject, deleteProject, resumeProject, editProject, allProjects,
+            orders, addOrder, updateOrderStatus, deleteOrder, addOrderComment, unreadNotifications, markNotificationsAsRead
         }}>
             {children}
         </GlobalContext.Provider>
