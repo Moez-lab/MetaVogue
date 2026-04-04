@@ -9,3 +9,4 @@ call conda activate feature-extractor
 echo.
 echo Starting Express server on port 3001...
 node server.js
+pause
