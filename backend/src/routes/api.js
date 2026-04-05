@@ -68,6 +68,22 @@ router.post('/users/toggle-admin', async (req, res) => {
   }
 });
 
+router.post('/users/reset-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    // We set a temporary password
+    const hashedPassword = await bcrypt.hash('Password123', 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ success: true, message: 'Password reset to Password123' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==============================
 // PROJECTS
 // ==============================

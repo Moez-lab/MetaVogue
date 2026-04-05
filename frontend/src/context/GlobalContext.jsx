@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
-    loginUser, fetchUsers, toggleUserAdmin,
+    loginUser, fetchUsers, toggleUserAdmin, resetUserPassword,
     fetchProjects, createProjectDB, updateProjectDB, deleteProjectDB,
     fetchOrders, createOrderDB, updateOrderDB, deleteOrderDB, addOrderCommentDB
 } from '../services/api';
@@ -83,7 +83,7 @@ export const GlobalProvider = ({ children }) => {
     const login = async (userData) => {
         try {
             // Send to backend (creates user if doesn't exist, else logs in)
-            const res = await loginUser(userData.email, 'password', userData.name || 'User');
+            const res = await loginUser(userData.email, userData.password, userData.name || 'User');
             localStorage.setItem('token', res.token);
             setUser(res.user);
             setIsAuthenticated(true);
@@ -113,6 +113,17 @@ export const GlobalProvider = ({ children }) => {
             setUsers(prev => prev.map(u => u.email === targetEmail ? { ...u, isAdmin: res.isAdmin } : u));
         } catch (err) {
             console.error("Toggle admin failed:", err);
+        }
+    };
+
+    const resetPassword = async (targetEmail) => {
+        if (!user || !user.isAdmin) return;
+        try {
+            await resetUserPassword(targetEmail);
+            alert(`Password for ${targetEmail} has been reset to "Password123"`);
+        } catch (err) {
+            console.error("Reset password failed:", err);
+            alert(`Failed to reset password: ${err.message}`);
         }
     };
 
@@ -267,7 +278,7 @@ export const GlobalProvider = ({ children }) => {
         <GlobalContext.Provider value={{
             theme, toggleTheme, currentView, setCurrentView,
             modelImage, setModelImage, shirtImage, setShirtImage, generatedVideo, setGeneratedVideo,
-            user, isAuthenticated, login, logout, users, toggleAdmin,
+            user, isAuthenticated, login, logout, users, toggleAdmin, resetPassword,
             activeProject, createProject, updateProjectAsset, cancelProject, deleteProject, resumeProject, editProject, allProjects,
             orders, addOrder, updateOrderStatus, deleteOrder, addOrderComment, unreadNotifications, markNotificationsAsRead
         }}>

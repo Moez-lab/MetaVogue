@@ -20,7 +20,7 @@ const getHeaders = () => {
 // Auth & Users
 // ==============================
 
-export const loginUser = async (email, password = 'password', name = '') => {
+export const loginUser = async (email, password, name = '') => {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -36,6 +36,15 @@ export const fetchUsers = async () => {
 
 export const toggleUserAdmin = async (email) => {
   const res = await fetch(`${API_BASE_URL}/users/toggle-admin`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ email })
+  });
+  return handleResponse(res);
+};
+
+export const resetUserPassword = async (email) => {
+  const res = await fetch(`${API_BASE_URL}/users/reset-password`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({ email })
