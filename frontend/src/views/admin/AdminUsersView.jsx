@@ -2,7 +2,7 @@ import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
 
 export const AdminUsersView = () => {
-    const { users, toggleAdmin, user } = useGlobal();
+    const { users, toggleAdmin, resetPassword, user } = useGlobal();
 
     // Safety check - although route should protect this
     if (!user?.isAdmin) {
@@ -70,17 +70,30 @@ export const AdminUsersView = () => {
                                         {u.email === user.email ? (
                                             <span className="text-xs text-white/30 italic mr-2">Current User</span>
                                         ) : (
-                                            <button
-                                                onClick={() => toggleAdmin(u.email)}
-                                                className={`
-                                                    px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 border
-                                                    ${u.isAdmin
-                                                        ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
-                                                        : 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20'}
-                                                `}
-                                            >
-                                                {u.isAdmin ? 'Revoke Admin' : 'Make Admin'}
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm(`Reset password for ${u.email} to "Password123"?`)) {
+                                                            resetPassword(u.email);
+                                                        }
+                                                    }}
+                                                    className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:bg-white/10 hover:text-white transition-all border border-white/5"
+                                                    title="Reset Password"
+                                                >
+                                                    <Icon name="Key" size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => toggleAdmin(u.email)}
+                                                    className={`
+                                                        px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 border
+                                                        ${u.isAdmin
+                                                            ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
+                                                            : 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20'}
+                                                    `}
+                                                >
+                                                    {u.isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                                                </button>
+                                            </div>
                                         )}
                                     </td>
                                 </tr>

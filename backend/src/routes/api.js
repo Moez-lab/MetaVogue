@@ -1,9 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import Project from '../models/Project.js';
 import Order from '../models/Order.js';
+import { sendEmail } from '../utils/mailer.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
@@ -39,6 +41,67 @@ router.post('/auth/login', async (req, res) => {
 
     const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { name: user.name, email: user.email, isAdmin: user.isAdmin, joinedAt: user.joinedAt } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      // Don't reveal if user exists, but for convenience in lab:
+      return res.status(404).json({ error: 'No account with that email found.' });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    const resetUrl = `${req.get('origin') || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+
+    const info = await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Request - MetaVogue',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; color: #333;">
+          <h2>Password Reset Request</h2>
+          <p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
+          <p>Please click on the following link to complete the process:</p>
+          <a href="${resetUrl}" style="padding: 10px 20px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
+          <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+          <hr />
+          <p style="font-size: 12px; color: #777;">Link expires in 1 hour.</p>
+        </div>
+      `
+    });
+
+    res.json({ success: true, message: 'Reset email sent.', previewUrl: info.previewUrl });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const user = await User.findOne({ 
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() } 
+    });
+
+    if (!user) return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password has been updated.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

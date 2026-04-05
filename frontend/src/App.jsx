@@ -22,6 +22,8 @@ import { AnalyticsView } from './views/admin/AnalyticsView';
 import { BrandiesView } from './views/customer/BrandiesView';
 import { MyOrdersView } from './views/customer/MyOrdersView';
 import { NanoBananaView } from './views/NanoBananaView';
+import { ForgotPasswordView } from './views/ForgotPasswordView';
+import { ResetPasswordView } from './views/ResetPasswordView';
 
 // ── Protected Layout ─────────────────────────────────────────────────
 // Displayed for all authenticated routes. Renders shared chrome (sidebar,
@@ -82,6 +84,14 @@ const App = () => {
             ? <Navigate to={homePath} replace />
             : <LoginView onBack={() => navigate('/')} />
         }
+      />
+      <Route
+        path="/forgot-password"
+        element={<ForgotPasswordView onBack={() => navigate('/login')} />}
+      />
+      <Route
+        path="/reset-password"
+        element={<ResetPasswordView />}
       />
 
       {/* Protected routes — all rendered inside ProtectedLayout */}

@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../context/GlobalContext';
 import { Icon } from '../components/Icon';
 import logo from '../assets/logo.png';
 
 export const LoginView = ({ onBack }) => {
     const { login, setCurrentView } = useGlobal();
+    const navigate = useNavigate();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -193,6 +195,17 @@ export const LoginView = ({ onBack }) => {
                                 >
                                     <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
                                 </button>
+                                {!isSignUp && (
+                                    <div className="flex justify-end mt-2 animate-fade-in">
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/forgot-password')}
+                                            className="text-[10px] text-white/30 hover:text-primary transition-colors uppercase font-bold tracking-widest"
+                                        >
+                                            Forgot Password?
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="pt-4">
