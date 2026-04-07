@@ -5,7 +5,8 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 export const WorkTrackingView = () => {
-    const { allProjects, deleteProject, resumeProject, editProject } = useGlobal();
+    const { allProjects, deleteProject, resumeProject, editProject, users, orders, user } = useGlobal();
+    const admins = users.filter(u => u.isAdmin);
     // Use local state only for the form, not the list
     const [projects, setProjects] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -157,7 +158,18 @@ ${project.modelDesc}
         saveAs(content, `${project.id}.zip`);
     };
 
-    const filteredProjects = projects.filter(p => {
+    // Merge Projects and Assigned Orders for the History View
+    const workItems = [
+        ...projects.map(p => ({ ...p, type: 'project' })),
+        // Only show orders that are explicitly assigned to THIS admin
+        ...orders.filter(o => o.assignedAdminEmail === user?.email).map(o => ({ 
+            ...o, 
+            type: 'order',
+            company: o.brandName 
+        }))
+    ];
+
+    const filteredItems = workItems.filter(p => {
         const matchesSearch = (p.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (p.company || '').toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -321,7 +333,7 @@ ${project.modelDesc}
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-bold text-slate-800 dark:text-white">History</h3>
                         <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-bold text-slate-500">
-                            {projects.length} Projects
+                            {workItems.length} Items
                         </span>
                     </div>
 
@@ -361,13 +373,18 @@ ${project.modelDesc}
 
                     {/* List */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                        {filteredProjects.length === 0 ? (
+                        {filteredItems.length === 0 ? (
                             <div className="text-center py-10 text-slate-400">
-                                <p>No projects found</p>
+                                <p>No work items found</p>
                             </div>
                         ) : (
-                            filteredProjects.map((project) => (
-                                <div key={project.id} className="group p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-cyan-500/30 transition-all hover:shadow-lg hover:shadow-cyan-500/5">
+                            filteredItems.map((project) => (
+                                <div key={project.id} className="group p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-cyan-500/30 transition-all hover:shadow-lg hover:shadow-cyan-500/5 relative overflow-hidden">
+                                     {project.type === 'order' && (
+                                         <div className="absolute top-0 right-0 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] font-bold rounded-bl-lg">
+                                             ORDER
+                                         </div>
+                                     )}
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h4 className="font-bold text-slate-800 dark:text-white text-sm">{project.company}</h4>
@@ -375,39 +392,62 @@ ${project.modelDesc}
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-2 mb-2">
-                                        <button
-                                            onClick={() => resumeProject(project)}
-                                            className="p-2 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white rounded-lg transition-colors text-xs font-bold flex items-center gap-1"
-                                            title="Resume Project"
-                                        >
-                                            <Icon name="Play" size={12} /> Resume
-                                        </button>
-                                        <button
-                                            onClick={() => handleEditClick(project)}
-                                            className="p-2 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg transition-colors"
-                                            title="Edit Details"
-                                        >
-                                            <Icon name="Edit" size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDownload(project)}
-                                            className="p-2 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg transition-colors"
-                                            title="Download Files"
-                                        >
-                                            <Icon name="Download" size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm('Are you sure you want to delete this project?')) {
-                                                    deleteProject(project.id);
-                                                }
-                                            }}
-                                            className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors"
-                                            title="Delete Project"
-                                        >
-                                            <Icon name="Trash" size={14} />
-                                        </button>
+                                        {project.type === 'project' && (
+                                            <>
+                                                <button
+                                                    onClick={() => resumeProject(project)}
+                                                    className="p-2 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white rounded-lg transition-colors text-xs font-bold flex items-center gap-1"
+                                                    title="Resume Project"
+                                                >
+                                                    <Icon name="Play" size={12} /> Resume
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEditClick(project)}
+                                                    className="p-2 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg transition-colors"
+                                                    title="Edit Details"
+                                                >
+                                                    <Icon name="Edit" size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDownload(project)}
+                                                    className="p-2 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg transition-colors"
+                                                    title="Download Files"
+                                                >
+                                                    <Icon name="Download" size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm('Are you sure you want to delete this project?')) {
+                                                            deleteProject(project.id);
+                                                        }
+                                                    }}
+                                                    className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors"
+                                                    title="Delete Project"
+                                                >
+                                                    <Icon name="Trash" size={14} />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
+
+                                    {/* Assignment UI */}
+                                    {project.type === 'project' && (
+                                        <div className="mb-4 bg-white/5 p-3 rounded-xl border border-white/5">
+                                            <label className="text-[10px] font-bold text-white/40 uppercase mb-2 block">Assigned To</label>
+                                            <select
+                                                value={project.assignedAdminEmail || ''}
+                                                onChange={(e) => editProject(project.id, { assignedAdminEmail: e.target.value || null })}
+                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none"
+                                            >
+                                                <option value="">Unassigned</option>
+                                                {admins.map(admin => (
+                                                    <option key={admin.email} value={admin.email}>
+                                                        {admin.name} ({admin.email})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                     <div className="flex gap-2 text-[10px] text-slate-500 dark:text-slate-400 mb-2">
                                         <span className="flex items-center gap-1 bg-white dark:bg-black/20 px-2 py-1 rounded-md">
                                             <Icon name="Shirt" size={10} /> {project.files?.shirt ? 'File' : 'No File'}

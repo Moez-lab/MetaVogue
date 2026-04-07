@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
 import { UploadZone } from '../../components/UploadZone';
 
 export const BrandiesView = () => {
-    const { addOrder, user, setCurrentView } = useGlobal();
+    const { addOrder, user, orders } = useGlobal();
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('new');
     const [brandName, setBrandName] = useState('');
     const [modelDescription, setModelDescription] = useState('');
     const [shirtImage, setShirtImage] = useState(null);
@@ -95,8 +98,27 @@ export const BrandiesView = () => {
                     </div>
                 </div>
 
-                {/* Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                {/* Navigation Tabs */}
+                <div className="flex gap-4 mb-8 border-b border-white/10 animate-fade-in-up">
+                    <button
+                        onClick={() => setActiveTab('new')}
+                        className={`text-lg font-bold pb-4 -mb-px transition-colors ${activeTab === 'new' ? 'text-purple-400 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}
+                    >
+                        New Request
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`text-lg font-bold pb-4 -mb-px transition-colors flex items-center gap-2 ${activeTab === 'history' ? 'text-purple-400 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}
+                    >
+                        My Activity
+                        <span className="px-2 py-0.5 bg-white/10 rounded-full text-xs">{orders.filter(o => o.brandEmail === user?.email).length}</span>
+                    </button>
+                </div>
+
+                {activeTab === 'new' ? (
+                    <>
+                        {/* Features Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                     {[
                         { icon: 'Sparkles', title: 'AI Model Generation', desc: 'Custom human models tailored to your target demographic (Age, Ethnicity, Style).' },
                         { icon: 'Shirt', title: 'Virtual Fitting', desc: 'Advanced cloth simulation ensuring your garment drapes naturally on the model.' },
@@ -348,7 +370,7 @@ export const BrandiesView = () => {
                                             Submit Another
                                         </button>
                                         <button
-                                            onClick={() => setCurrentView('my-orders')}
+                                            onClick={() => navigate('/my-orders')}
                                             className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-500/30"
                                         >
                                             View My Orders
@@ -409,6 +431,82 @@ export const BrandiesView = () => {
                         </div>
                     </div>
                 </div>
+                </>
+                ) : (
+                    <div className="animate-fade-in-up">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-white">Order History</h2>
+                        </div>
+                        
+                        {orders.filter(o => o.brandEmail === user?.email).length === 0 ? (
+                            <div className="text-center py-20 bg-[#111827]/80 rounded-3xl border border-white/10">
+                                <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-purple-400">
+                                    <Icon name="Inbox" size={32} />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">No active orders</h3>
+                                <p className="text-gray-400">You haven't submitted any transformation requests yet.</p>
+                                <button 
+                                    onClick={() => setActiveTab('new')}
+                                    className="mt-6 px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors"
+                                >
+                                    Start a Request
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="grid gap-6">
+                                {orders.filter(o => o.brandEmail === user?.email).sort((a,b) => new Date(b.date) - new Date(a.date)).map(order => (
+                                    <div key={order.id} className="bg-[#111827]/80 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-lg relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500/50 to-transparent"></div>
+                                        <div className="flex flex-col md:flex-row gap-6">
+                                            {order.shirtImage ? (
+                                                <div className="w-32 h-32 bg-black/40 rounded-xl overflow-hidden shrink-0 border border-white/5">
+                                                    <img src={order.shirtImage} alt="Garment" className="w-full h-full object-contain p-2" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-32 h-32 bg-black/40 rounded-xl flex items-center justify-center text-gray-600 shrink-0 border border-white/5">
+                                                    <Icon name="Image" size={32} />
+                                                </div>
+                                            )}
+                                            <div className="flex-1">
+                                                <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-4">
+                                                    <div>
+                                                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                                            <span className="font-mono text-xs text-gray-500">{order.id}</span>
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border 
+                                                                ${order.status === 'Completed' ? 'text-green-400 border-green-500/30 bg-green-500/10' : 
+                                                                  order.status === 'Accepted' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' : 
+                                                                  order.status === 'Rejected' ? 'text-red-400 border-red-500/30 bg-red-500/10' : 
+                                                                  'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'}`}>
+                                                                {order.status}
+                                                            </span>
+                                                        </div>
+                                                        <h3 className="text-xl font-bold text-white">{order.brandName || 'Unknown'} Request</h3>
+                                                        <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
+                                                            <Icon name="Calendar" size={14} />
+                                                            {new Date(order.date).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    {order.status === 'Completed' && order.deliverables && order.deliverables.length > 0 && (
+                                                        <a href={order.deliverables[order.deliverables.length - 1].url} download target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl font-bold transition-colors whitespace-nowrap">
+                                                            <Icon name="Download" size={16} /> Download Final
+                                                        </a>
+                                                    )}
+                                                </div>
+                                                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+                                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</h4>
+                                                    <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                                                        {order.modelDescription}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

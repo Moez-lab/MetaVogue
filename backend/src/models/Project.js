@@ -39,6 +39,10 @@ const projectSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now
+  },
+  assignedAdminEmail: {
+    type: String,
+    default: null
   }
 });
 

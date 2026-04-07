@@ -3,91 +3,108 @@ import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
 
 export const AnalyticsView = () => {
-    const { orders } = useGlobal();
+    const { orders, users, allProjects } = useGlobal();
     const [timeRange, setTimeRange] = useState('all'); // all, year, month, custom
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // Calculate metrics from orders
+    // Calculate metrics from orders, projects, and users
     const metrics = useMemo(() => {
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
+        // 1. Order Calculations
         let completedOrders = orders.filter(o => (o.status === 'Completed' || o.paymentStatus === 'Paid') && o.paymentStatus === 'Paid');
+        
+        // 2. Project Calculations
+        let filteredProjects = allProjects;
 
         // Apply custom date range filter if selected
         if (timeRange === 'custom' && startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999); // Include the entire end date
+            end.setHours(23, 59, 59, 999);
+            
             completedOrders = completedOrders.filter(o => {
                 const orderDate = new Date(o.date);
                 return orderDate >= start && orderDate <= end;
+            });
+
+            filteredProjects = allProjects.filter(p => {
+                const d = new Date(p.date || Date.now());
+                return d >= start && d <= end;
             });
         }
 
         const totalRevenue = completedOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
         const totalOrders = completedOrders.length;
+        const totalProjects = filteredProjects.length;
+        const totalUsers = users.length;
 
-        // Monthly revenue
-        const monthlyOrders = completedOrders.filter(o => {
-            const orderDate = new Date(o.date);
-            return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
-        });
-        const monthlyRevenue = monthlyOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+        // Generated Assets Count (Steps that are 'done')
+        const generatedAssets = allProjects.reduce((sum, p) => {
+            const stepsDone = Object.values(p.steps || {}).filter(s => s === 'done').length;
+            return sum + stepsDone;
+        }, 0);
 
-        // Yearly revenue
-        const yearlyOrders = completedOrders.filter(o => {
-            const orderDate = new Date(o.date);
-            return orderDate.getFullYear() === currentYear;
-        });
-        const yearlyRevenue = yearlyOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
-
-        // Previous month for growth calculation
-        const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-        const prevMonthOrders = completedOrders.filter(o => {
-            const orderDate = new Date(o.date);
-            return orderDate.getMonth() === prevMonth && orderDate.getFullYear() === prevMonthYear;
-        });
-        const prevMonthRevenue = prevMonthOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
-        const growthRate = prevMonthRevenue > 0
-            ? ((monthlyRevenue - prevMonthRevenue) / prevMonthRevenue * 100).toFixed(1)
-            : 0;
-
-        // Last 12 months data for graph
+        // Monthly data for charts
         const monthlyData = [];
         for (let i = 11; i >= 0; i--) {
             const date = new Date(currentYear, currentMonth - i, 1);
             const month = date.getMonth();
             const year = date.getFullYear();
-            const monthOrders = completedOrders.filter(o => {
-                const orderDate = new Date(o.date);
-                return orderDate.getMonth() === month && orderDate.getFullYear() === year;
+            
+            // Orders this month
+            const mOrders = orders.filter(o => {
+                const od = new Date(o.date);
+                return od.getMonth() === month && od.getFullYear() === year && o.paymentStatus === 'Paid';
             });
-            const revenue = monthOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+            const revenue = mOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
+
+            // Projects this month
+            const mProjects = allProjects.filter(p => {
+                const pd = new Date(p.date || Date.now());
+                return pd.getMonth() === month && pd.getFullYear() === year;
+            });
+
             monthlyData.push({
                 month: date.toLocaleDateString('en-US', { month: 'short' }),
                 revenue,
-                orders: monthOrders.length
+                orders: mOrders.length,
+                projects: mProjects.length
             });
         }
 
+        // Growth Rate for projects (vs last month)
+        const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+        const currMonthProjects = allProjects.filter(p => {
+            const pd = new Date(p.date || Date.now());
+            return pd.getMonth() === currentMonth && pd.getFullYear() === currentYear;
+        }).length;
+        const prevMonthProjects = allProjects.filter(p => {
+            const pd = new Date(p.date || Date.now());
+            return pd.getMonth() === prevMonth && pd.getFullYear() === prevMonthYear;
+        }).length;
+        
+        const projectGrowth = prevMonthProjects > 0
+            ? ((currMonthProjects - prevMonthProjects) / prevMonthProjects * 100).toFixed(1)
+            : 0;
+
         return {
             totalRevenue,
-            monthlyRevenue,
-            yearlyRevenue,
             totalOrders,
-            monthlyOrders: monthlyOrders.length,
-            yearlyOrders: yearlyOrders.length,
-            avgOrderValue: totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0,
-            growthRate,
+            totalProjects,
+            totalUsers,
+            generatedAssets,
+            projectGrowth,
+            avgOrderValue: totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00',
             monthlyData,
-            recentOrders: completedOrders.slice(-5).reverse()
+            recentOrders: orders.slice(-5).reverse()
         };
-    }, [orders, timeRange, startDate, endDate]);
+    }, [orders, allProjects, users, timeRange, startDate, endDate]);
 
     const MetricCard = ({ icon, label, value, subtext, trend, iconColor }) => (
         <div className="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200 dark:border-white/10 hover:shadow-lg transition-all duration-300 group">
@@ -199,73 +216,114 @@ export const AnalyticsView = () => {
                     icon="DollarSign"
                     label="Total Revenue"
                     value={`$${metrics.totalRevenue.toFixed(2)}`}
-                    subtext={`${metrics.totalOrders} orders`}
+                    subtext={`${metrics.totalOrders} paid orders`}
                     iconColor="from-green-500 to-emerald-600"
                 />
                 <MetricCard
-                    icon="TrendingUp"
-                    label="Monthly Revenue"
-                    value={`$${metrics.monthlyRevenue.toFixed(2)}`}
-                    subtext={`${metrics.monthlyOrders} orders this month`}
-                    trend={parseFloat(metrics.growthRate)}
+                    icon="Sparkles"
+                    label="Generated Assets"
+                    value={metrics.generatedAssets}
+                    subtext="3D Models & Textures"
                     iconColor="from-blue-500 to-cyan-600"
                 />
                 <MetricCard
-                    icon="Calendar"
-                    label="Yearly Revenue"
-                    value={`$${metrics.yearlyRevenue.toFixed(2)}`}
-                    subtext={`${metrics.yearlyOrders} orders this year`}
+                    icon="Layers"
+                    label="Total Projects"
+                    value={metrics.totalProjects}
+                    subtext="All active workflows"
+                    trend={parseFloat(metrics.projectGrowth)}
                     iconColor="from-purple-500 to-pink-600"
                 />
                 <MetricCard
-                    icon="ShoppingCart"
-                    label="Avg Order Value"
-                    value={`$${metrics.avgOrderValue}`}
-                    subtext="Per completed order"
+                    icon="Users"
+                    label="Total Users"
+                    value={metrics.totalUsers}
+                    subtext="Registered accounts"
                     iconColor="from-orange-500 to-red-600"
                 />
             </div>
 
-            {/* Revenue Trend Graph */}
-            <div className="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200 dark:border-white/10 mb-8">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                    <Icon name="BarChart2" className="text-purple-600" />
-                    Revenue Trend (Last 12 Months)
-                </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* Revenue Trend Graph */}
+                <div className="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                        <Icon name="BarChart2" className="text-emerald-500" />
+                        Revenue Trend
+                    </h3>
 
-                {metrics.monthlyData.some(d => d.revenue > 0) ? (
-                    <div className="h-64 flex items-end justify-between gap-2">
-                        {metrics.monthlyData.map((data, i) => {
-                            const height = maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0;
-                            const displayHeight = Math.max(height, data.revenue > 0 ? 5 : 0); // Minimum 5% if has revenue
-                            return (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                                    <div className="relative w-full h-full flex items-end">
-                                        {data.revenue > 0 ? (
-                                            <div
-                                                className="w-full bg-gradient-to-t from-purple-600 to-pink-600 rounded-t-lg transition-all duration-500 hover:from-purple-500 hover:to-pink-500 cursor-pointer relative"
-                                                style={{ height: `${displayHeight}%` }}
-                                            >
-                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                                    ${data.revenue.toFixed(0)}
+                    {metrics.monthlyData.some(d => d.revenue > 0) ? (
+                        <div className="h-48 flex items-end justify-between gap-2">
+                            {metrics.monthlyData.map((data, i) => {
+                                const height = maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0;
+                                return (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                                        <div className="relative w-full h-full flex items-end">
+                                            {data.revenue > 0 ? (
+                                                <div
+                                                    className="w-full bg-gradient-to-t from-emerald-500 to-teal-600 rounded-t-lg transition-all duration-500 hover:scale-x-110 cursor-pointer relative"
+                                                    style={{ height: `${Math.max(height, 5)}%` }}
+                                                >
+                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10 font-bold">
+                                                        ${data.revenue.toFixed(0)}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                                        )}
+                                            ) : (
+                                                <div className="w-full h-1 bg-slate-100 dark:bg-white/5 rounded"></div>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase">{data.month}</span>
                                     </div>
-                                    <span className="text-xs font-bold text-slate-500 dark:text-gray-400">{data.month}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="h-64 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500">
-                        <Icon name="BarChart2" size={64} className="mb-4 opacity-20" />
-                        <p className="text-lg font-bold">No Revenue Data Yet</p>
-                        <p className="text-sm">Complete some orders to see your revenue trend</p>
-                    </div>
-                )}
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="h-48 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 bg-slate-50 dark:bg-white/[0.02] rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                            <Icon name="BarChart2" size={32} className="mb-2 opacity-20" />
+                            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No Sales Data</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Project Activity Graph */}
+                <div className="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                        <Icon name="Activity" className="text-purple-500" />
+                        Project Activity
+                    </h3>
+
+                    {metrics.monthlyData.some(d => d.projects > 0) ? (
+                        <div className="h-48 flex items-end justify-between gap-2">
+                            {metrics.monthlyData.map((data, i) => {
+                                const maxProjects = Math.max(...metrics.monthlyData.map(d => d.projects), 1);
+                                const height = (data.projects / maxProjects) * 100;
+                                return (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                                        <div className="relative w-full h-full flex items-end">
+                                            {data.projects > 0 ? (
+                                                <div
+                                                    className="w-full bg-gradient-to-t from-purple-500 to-pink-600 rounded-t-lg transition-all duration-500 hover:scale-x-110 cursor-pointer relative"
+                                                    style={{ height: `${Math.max(height, 5)}%` }}
+                                                >
+                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10 font-bold">
+                                                        {data.projects} Projects
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="w-full h-1 bg-slate-100 dark:bg-white/5 rounded"></div>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase">{data.month}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="h-48 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 bg-slate-50 dark:bg-white/[0.02] rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                            <Icon name="Activity" size={32} className="mb-2 opacity-20" />
+                            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No Project Data</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Recent Transactions */}

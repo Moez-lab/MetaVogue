@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon';
 import logo from '../assets/logo.png';
 
 export const LoginView = ({ onBack }) => {
-    const { login, setCurrentView } = useGlobal();
+    const { login, register, setCurrentView } = useGlobal();
     const navigate = useNavigate();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
@@ -16,7 +16,12 @@ export const LoginView = ({ onBack }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const loggedInUser = await login({ name: name || 'User', email, password });
+            let loggedInUser;
+            if (isSignUp) {
+                loggedInUser = await register({ name: name || 'User', email, password });
+            } else {
+                loggedInUser = await login({ email, password });
+            }
             
             if (loggedInUser?.isAdmin) {
                 setCurrentView('home');
@@ -24,8 +29,8 @@ export const LoginView = ({ onBack }) => {
                 setCurrentView('brandies');
             }
         } catch (err) {
-            console.error("Login Error:", err);
-            // Error is already alerted in GlobalContext temporarily
+            console.error("Auth Error:", err);
+            // Error is already alerted in GlobalContext
         }
     };
 

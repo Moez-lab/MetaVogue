@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
-    loginUser, fetchUsers, toggleUserAdmin, resetUserPassword,
+    loginUser, registerUser, fetchUsers, toggleUserAdmin, resetUserPassword, deleteUserDB,
     fetchProjects, createProjectDB, updateProjectDB, deleteProjectDB,
     fetchOrders, createOrderDB, updateOrderDB, deleteOrderDB, addOrderCommentDB
 } from '../services/api';
@@ -82,8 +82,8 @@ export const GlobalProvider = ({ children }) => {
     // ================== AUTH ==================
     const login = async (userData) => {
         try {
-            // Send to backend (creates user if doesn't exist, else logs in)
-            const res = await loginUser(userData.email, userData.password, userData.name || 'User');
+            // Send to backend (logs in)
+            const res = await loginUser(userData.email, userData.password);
             localStorage.setItem('token', res.token);
             setUser(res.user);
             setIsAuthenticated(true);
@@ -92,7 +92,24 @@ export const GlobalProvider = ({ children }) => {
         } catch (error) {
             console.error("Login failed:", error);
             // Fallback for UI if backend is down while testing
-            alert(`Backend Login Failed: Ensure the Docker DB and backend server are running on port 3001.\nError: ${error.message}`);
+            alert(`Login Failed: ${error.message}`);
+            throw error;
+        }
+    };
+
+    const register = async (userData) => {
+        try {
+            // Send to backend (creates user)
+            const res = await registerUser(userData.email, userData.password, userData.name || 'User');
+            localStorage.setItem('token', res.token);
+            setUser(res.user);
+            setIsAuthenticated(true);
+            await loadDBData(); // Sync DB right after registration
+            return res.user;
+        } catch (error) {
+            console.error("Registration failed:", error);
+            alert(`Registration Failed: ${error.message}`);
+            throw error;
         }
     };
 
@@ -124,6 +141,17 @@ export const GlobalProvider = ({ children }) => {
         } catch (err) {
             console.error("Reset password failed:", err);
             alert(`Failed to reset password: ${err.message}`);
+        }
+    };
+
+    const deleteUser = async (targetEmail) => {
+        if (!user || !user.isAdmin) return;
+        try {
+            await deleteUserDB(targetEmail);
+            setUsers(prev => prev.filter(u => u.email !== targetEmail));
+        } catch (err) {
+            console.error("Delete user failed:", err);
+            alert(`Failed to delete user: ${err.message}`);
         }
     };
 
@@ -278,7 +306,7 @@ export const GlobalProvider = ({ children }) => {
         <GlobalContext.Provider value={{
             theme, toggleTheme, currentView, setCurrentView,
             modelImage, setModelImage, shirtImage, setShirtImage, generatedVideo, setGeneratedVideo,
-            user, isAuthenticated, login, logout, users, toggleAdmin, resetPassword,
+            user, isAuthenticated, login, register, logout, users, toggleAdmin, resetPassword, deleteUser,
             activeProject, createProject, updateProjectAsset, cancelProject, deleteProject, resumeProject, editProject, allProjects,
             orders, addOrder, updateOrderStatus, deleteOrder, addOrderComment, unreadNotifications, markNotificationsAsRead
         }}>

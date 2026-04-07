@@ -14,29 +14,50 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
 // AUTH & USERS
 // ==============================
 
-router.post('/auth/login', async (req, res) => {
+router.post('/auth/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
     let user = await User.findOne({ email: email.toLowerCase() });
 
+    if (user) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    if (!name) return res.status(400).json({ error: 'Name is required to register.' });
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user = new User({
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      isAdmin: email.toLowerCase() === 'mueezzakir6@gmail.com'
+    });
+    
+    await user.save();
+
+    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { name: user.name, email: user.email, isAdmin: user.isAdmin, joinedAt: user.joinedAt } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    let user = await User.findOne({ email: email.toLowerCase() });
+
     if (!user) {
-      if (!name) return res.status(400).json({ error: 'User not found. Name required to register.' });
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user = new User({
-        name,
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        isAdmin: email.toLowerCase() === 'mueezzakir6@gmail.com'
-      });
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid password' });
+    
+    // Ensure specific user is always admin
+    if (user.email === 'mueezzakir6@gmail.com' && !user.isAdmin) {
+      user.isAdmin = true;
       await user.save();
-    } else {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) return res.status(401).json({ error: 'Invalid password' });
-      // Ensure specific user is always admin
-      if (user.email === 'mueezzakir6@gmail.com' && !user.isAdmin) {
-        user.isAdmin = true;
-        await user.save();
-      }
     }
 
     const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '7d' });
@@ -142,6 +163,18 @@ router.post('/users/reset-password', async (req, res) => {
     user.password = hashedPassword;
     await user.save();
     res.json({ success: true, message: 'Password reset to Password123' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/users/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (email.toLowerCase() === 'mueezzakir6@gmail.com') return res.status(400).json({ error: 'Cannot delete super admin' });
+    
+    await User.findOneAndDelete({ email: email.toLowerCase() });
+    res.json({ success: true, message: 'User deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

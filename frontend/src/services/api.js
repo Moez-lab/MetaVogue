@@ -20,8 +20,17 @@ const getHeaders = () => {
 // Auth & Users
 // ==============================
 
-export const loginUser = async (email, password, name = '') => {
+export const loginUser = async (email, password) => {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  return handleResponse(res);
+};
+
+export const registerUser = async (email, password, name) => {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, name })

@@ -17,6 +17,22 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  brandName: {
+    type: String,
+    default: 'Brand'
+  },
+  modelDescription: {
+    type: String
+  },
+  shirtImage: {
+    type: String
+  },
+  referenceImage: {
+    type: String
+  },
+  referenceHeight: {
+    type: String
+  },
   date: {
     type: Date,
     default: Date.now
@@ -36,6 +52,10 @@ const orderSchema = new mongoose.Schema({
   read: {
     type: Boolean,
     default: false
+  },
+  assignedAdminEmail: {
+    type: String,
+    default: null
   },
   comments: [orderCommentSchema]
 });

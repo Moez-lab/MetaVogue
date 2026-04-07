@@ -122,7 +122,7 @@ export const UploadZone = ({ onFileSelect, accept = "image/*", maxSize = 1048576
                         </div>
                     )}
 
-                    <button className="px-6 py-2.5 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-cyan-500/30 rounded-xl text-sm font-bold text-slate-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-white transition-all flex items-center gap-2 mx-auto shadow-sm dark:shadow-none">
+                    <button type="button" className="px-6 py-2.5 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-cyan-500/30 rounded-xl text-sm font-bold text-slate-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-white transition-all flex items-center gap-2 mx-auto shadow-sm dark:shadow-none">
                         <Icon name="File" size={16} />
                         Select File
                     </button>

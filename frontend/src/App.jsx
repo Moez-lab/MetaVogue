@@ -18,6 +18,7 @@ import { WorkTrackingView } from './views/admin/WorkTrackingView';
 import { OrdersView } from './views/admin/OrdersView';
 import { AdminUsersView } from './views/admin/AdminUsersView';
 import { AnalyticsView } from './views/admin/AnalyticsView';
+import { MyTasksView } from './views/admin/MyTasksView';
 // ── Customer Views ───────────────────────────────────────────────────
 import { BrandiesView } from './views/customer/BrandiesView';
 import { MyOrdersView } from './views/customer/MyOrdersView';
@@ -45,7 +46,7 @@ const ProtectedLayout = () => {
         }}
       />
 
-      {user?.email === 'mueezzakir6@gmail.com' ? <Sidebar /> : <BrandiesSidebar />}
+      {user?.isAdmin ? <Sidebar /> : <BrandiesSidebar />}
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10 mt-4 mr-4 mb-4 rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-sm bg-white dark:bg-[#050b14] transition-all duration-300">
         <TopBar />
@@ -103,6 +104,7 @@ const App = () => {
         <Route path="/video"             element={<VideoStudioView />} />
         <Route path="/texture"           element={<TextureStudioView />} />
         <Route path="/work-tracking"     element={<WorkTrackingView />} />
+        <Route path="/my-tasks"          element={<MyTasksView />} />
         <Route path="/brandies"          element={<BrandiesView />} />
         <Route path="/orders"            element={<OrdersView />} />
         <Route path="/admin-users"       element={<AdminUsersView />} />
