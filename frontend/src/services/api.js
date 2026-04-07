@@ -52,6 +52,14 @@ export const fetchUsers = async () => {
   return handleResponse(res);
 };
 
+export const deleteUserDB = async (email) => {
+  const res = await fetch(`${API_BASE_URL}/users/${email}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  return handleResponse(res);
+};
+
 export const toggleUserAdmin = async (email) => {
   const res = await fetch(`${API_BASE_URL}/users/toggle-admin`, {
     method: 'POST',
