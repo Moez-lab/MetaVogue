@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
 import { UploadZone } from '../../components/UploadZone';
+import { uploadFile } from '../../services/api';
 
 export const BrandiesView = () => {
     const { addOrder, user, orders } = useGlobal();
@@ -11,56 +12,69 @@ export const BrandiesView = () => {
     const [brandName, setBrandName] = useState('');
     const [modelDescription, setModelDescription] = useState('');
     const [shirtImage, setShirtImage] = useState(null);
+    const [shirtFile, setShirtFile] = useState(null);
     const [referenceImage, setReferenceImage] = useState(null);
+    const [referenceFile, setReferenceFile] = useState(null);
     const [referenceHeight, setReferenceHeight] = useState('170'); // Default height in cm
     const [showPromptGuide, setShowPromptGuide] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     const handleFileSelect = (file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setShirtImage(e.target.result);
-        };
-        reader.readAsDataURL(file);
+        setShirtFile(file);
+        setShirtImage(URL.createObjectURL(file));
     };
 
     const handleReferenceSelect = (file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setReferenceImage(e.target.result);
-        };
-        reader.readAsDataURL(file);
+        setReferenceFile(file);
+        setReferenceImage(URL.createObjectURL(file));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsProcessing(true);
 
-        // Simulate submission processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            let finalShirtUrl = null;
+            if (shirtFile) {
+                const res = await uploadFile(shirtFile);
+                finalShirtUrl = res.url;
+            }
 
-        addOrder({
-            modelDescription,
-            shirtImage,
-            referenceImage,
-            referenceHeight: referenceImage ? referenceHeight : null,
-            brandEmail: user?.email || 'Unknown',
-            brandName: brandName || user?.name || 'Brand',
-            paymentStatus: 'Unpaid',
-            orderStatus: 'Pending Approval',
-            amount: 49.00
-        });
+            let finalReferenceUrl = null;
+            if (referenceFile) {
+                const res = await uploadFile(referenceFile);
+                finalReferenceUrl = res.url;
+            }
 
-        setIsProcessing(false);
-        setSubmitted(true);
+            addOrder({
+                modelDescription,
+                shirtImage: finalShirtUrl,
+                referenceImage: finalReferenceUrl,
+                referenceHeight: referenceImage ? referenceHeight : null,
+                brandEmail: user?.email || 'Unknown',
+                brandName: brandName || user?.name || 'Brand',
+                paymentStatus: 'Unpaid',
+                orderStatus: 'Pending Approval',
+                amount: 49.00
+            });
+
+            setIsProcessing(false);
+            setSubmitted(true);
+        } catch (err) {
+            console.error('Upload Error:', err);
+            alert('Failed to upload image. Please try again.');
+            setIsProcessing(false);
+        }
     };
 
     const handleReset = () => {
         setBrandName('');
         setModelDescription('');
         setShirtImage(null);
+        setShirtFile(null);
         setReferenceImage(null);
+        setReferenceFile(null);
         setReferenceHeight('170');
         setSubmitted(false);
     };

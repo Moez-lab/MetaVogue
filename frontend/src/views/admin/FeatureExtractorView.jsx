@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon } from '../components/Icon';
+import { Icon } from '../../components/Icon';
 
 export const FeatureExtractorView = () => {
     const [file, setFile] = useState(null);

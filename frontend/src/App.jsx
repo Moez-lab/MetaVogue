@@ -7,11 +7,7 @@ import { TopBar } from './components/TopBar';
 // ── Shared Views ────────────────────────────────────────────────────
 import { LandingView } from './views/LandingView';
 import { LoginView } from './views/LoginView';
-import { ModelStudioView } from './views/ModelStudioView';
-import { UploadStudioView } from './views/UploadStudioView';
-import { VideoStudioView } from './views/VideoStudioView';
-import { TextureStudioView } from './views/TextureStudioView';
-import { FeatureExtractorView } from './views/FeatureExtractorView';
+// Imports moved to Admin Views section
 // ── Admin Views ─────────────────────────────────────────────────────
 import { HomeView } from './views/admin/HomeView';
 import { WorkTrackingView } from './views/admin/WorkTrackingView';
@@ -19,10 +15,15 @@ import { OrdersView } from './views/admin/OrdersView';
 import { AdminUsersView } from './views/admin/AdminUsersView';
 import { AnalyticsView } from './views/admin/AnalyticsView';
 import { MyTasksView } from './views/admin/MyTasksView';
+import { ModelStudioView } from './views/admin/ModelStudioView';
+import { UploadStudioView } from './views/admin/UploadStudioView';
+import { VideoStudioView } from './views/admin/VideoStudioView';
+import { TextureStudioView } from './views/admin/TextureStudioView';
+import { FeatureExtractorView } from './views/admin/FeatureExtractorView';
+import { NanoBananaView } from './views/admin/NanoBananaView';
 // ── Customer Views ───────────────────────────────────────────────────
 import { BrandiesView } from './views/customer/BrandiesView';
 import { MyOrdersView } from './views/customer/MyOrdersView';
-import { NanoBananaView } from './views/NanoBananaView';
 import { ForgotPasswordView } from './views/ForgotPasswordView';
 import { ResetPasswordView } from './views/ResetPasswordView';
 

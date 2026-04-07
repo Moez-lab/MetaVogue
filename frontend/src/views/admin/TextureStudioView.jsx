@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useGlobal } from '../context/GlobalContext';
-import { Icon } from '../components/Icon';
-import { ModelViewer } from '../components/ModelViewer';
-import { meshyService } from '../services/meshy';
+import { useGlobal } from '../../context/GlobalContext';
+import { Icon } from '../../components/Icon';
+import { ModelViewer } from '../../components/ModelViewer';
+import { meshyService } from '../../services/meshy';
 
 export const TextureStudioView = () => {
     const { modelImage, setModelImage, updateProjectAsset } = useGlobal();

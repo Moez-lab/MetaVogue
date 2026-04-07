@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useGlobal } from '../context/GlobalContext';
-import { Icon } from '../components/Icon';
-import { enhancePromptWithGemini } from '../utils/gemini';
+import { useGlobal } from '../../context/GlobalContext';
+import { Icon } from '../../components/Icon';
+import { enhancePromptWithGemini } from '../../utils/gemini';
 
 export const VideoStudioView = () => {
     const { modelImage, shirtImage } = useGlobal();

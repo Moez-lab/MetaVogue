@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useGlobal } from '../context/GlobalContext';
-import { Icon } from '../components/Icon';
-import { enhancePromptWithGemini } from '../utils/gemini';
-import { meshyService } from '../services/meshy';
-import { ModelViewer } from '../components/ModelViewer';
+import { useGlobal } from '../../context/GlobalContext';
+import { Icon } from '../../components/Icon';
+import { enhancePromptWithGemini } from '../../utils/gemini';
+import { meshyService } from '../../services/meshy';
+import { ModelViewer } from '../../components/ModelViewer';
 
 export const ModelStudioView = () => {
     const { setModelImage, updateProjectAsset } = useGlobal();

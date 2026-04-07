@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useGlobal } from '../context/GlobalContext';
-import { Icon } from '../components/Icon';
-import { UploadZone } from '../components/UploadZone';
-import { meshyService } from '../services/meshy';
-import { ModelViewer } from '../components/ModelViewer';
+import { useGlobal } from '../../context/GlobalContext';
+import { Icon } from '../../components/Icon';
+import { UploadZone } from '../../components/UploadZone';
+import { meshyService } from '../../services/meshy';
+import { ModelViewer } from '../../components/ModelViewer';
 
 // Utility to convert data URL to File object
 const dataURLtoFile = (dataurl, filename) => {

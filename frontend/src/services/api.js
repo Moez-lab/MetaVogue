@@ -165,3 +165,25 @@ export const addOrderCommentDB = async (id, commentData) => {
   });
   return handleResponse(res);
 };
+
+// ==============================
+// File Uploads
+// ==============================
+
+export const uploadFile = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const token = localStorage.getItem('token');
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/upload`, {
+    method: 'POST',
+    headers: headers,
+    body: formData
+  });
+  return handleResponse(res);
+};

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Icon } from '../components/Icon';
+import { Icon } from '../../components/Icon';
 
 // ── Image Upload Zone ──────────────────────────────────────────────────
 const ImageUploadZone = ({ label, sublabel, icon, value, onChange, accentColor = 'yellow' }) => {
