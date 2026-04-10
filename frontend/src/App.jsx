@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useGlobal } from './context/GlobalContext';
 import { Sidebar } from './components/Sidebar';
@@ -33,6 +33,7 @@ import { ResetPasswordView } from './views/ResetPasswordView';
 // topbar) and an <Outlet /> where child route components appear.
 const ProtectedLayout = () => {
   const { isAuthenticated, user } = useGlobal();
+  const location = useLocation();
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
@@ -58,7 +59,7 @@ const ProtectedLayout = () => {
       </div>
 
       {/* Global Floating AI Assistant - Stays on top of everything! */}
-      <AIAssistantWidget />
+      {location.pathname === '/brandies' && <AIAssistantWidget />}
     </div>
   );
 };
