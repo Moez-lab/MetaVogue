@@ -4,6 +4,7 @@ import { useGlobal } from './context/GlobalContext';
 import { Sidebar } from './components/Sidebar';
 import { BrandiesSidebar } from './components/BrandiesSidebar';
 import { TopBar } from './components/TopBar';
+import { AIAssistantWidget } from './components/AIAssistantWidget';
 // ── Shared Views ────────────────────────────────────────────────────
 import { LandingView } from './views/LandingView';
 import { LoginView } from './views/LoginView';
@@ -55,6 +56,9 @@ const ProtectedLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Global Floating AI Assistant - Stays on top of everything! */}
+      <AIAssistantWidget />
     </div>
   );
 };

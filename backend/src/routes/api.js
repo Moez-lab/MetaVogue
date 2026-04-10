@@ -6,6 +6,7 @@ import User from '../models/User.js';
 import Project from '../models/Project.js';
 import Order from '../models/Order.js';
 import { sendEmail } from '../utils/mailer.js';
+import { generateAnswer } from '../services/ragService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
@@ -308,6 +309,23 @@ router.post('/orders/:id/comments', async (req, res) => {
     res.json(order);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── RAG Chat Endpoint ────────────────────────────────────────────────────────
+router.post('/chat', async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    // Pass the user's message and history to our LangChain PDF service
+    const reply = await generateAnswer(message, history || []);
+    res.json({ reply });
+  } catch (err) {
+    console.error('Chat error:', err);
+    res.status(500).json({ error: err.message || 'Failed to generate response' });
   }
 });
 

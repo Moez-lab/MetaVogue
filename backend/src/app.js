@@ -3,6 +3,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { UPLOAD_DIR } from './config/index.js';
+import { initRAG } from './services/ragService.js';
 import extractRouter from './routes/extract.js';
 import apiRouter from './routes/api.js';
 
@@ -12,7 +13,11 @@ const app = express();
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://admin:password@localhost:27017/webmeta?authSource=admin')
-  .then(() => console.log('✅ Connected to MongoDB Database'))
+  .then(async () => {
+    console.log('✅ Connected to MongoDB Database');
+    // Load the PDF into memory
+    await initRAG();
+  })
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 // Middleware
