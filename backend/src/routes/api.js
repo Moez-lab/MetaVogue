@@ -6,7 +6,7 @@ import User from '../models/User.js';
 import Project from '../models/Project.js';
 import Order from '../models/Order.js';
 import { sendEmail } from '../utils/mailer.js';
-import { generateAnswer } from '../services/ragService.js';
+import { generateAnswer, generateAnswerStream } from '../services/ragService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
@@ -312,17 +312,41 @@ router.post('/orders/:id/comments', async (req, res) => {
   }
 });
 
-// ── RAG Chat Endpoint ────────────────────────────────────────────────────────
+// ── RAG Chat Endpoint (Streaming Support) ────────────────────────────────────
 router.post('/chat', async (req, res) => {
   try {
-    const { message, history } = req.body;
+    const { message, history, stream } = req.body;
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
-    
-    // Pass the user's message and history to our LangChain PDF service
-    const reply = await generateAnswer(message, history || []);
-    res.json({ reply });
+
+    if (stream) {
+      // Use writeHead for explicit SSE initialization
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      });
+
+      try {
+        const iterator = generateAnswerStream(message, history || []);
+        for await (const chunk of iterator) {
+          if (chunk) {
+            res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+          }
+        }
+        res.write('data: [DONE]\n\n');
+        return res.end();
+      } catch (err) {
+        console.error('Streaming error:', err);
+        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+        return res.end();
+      }
+    } else {
+      // Legacy non-streaming response
+      const reply = await generateAnswer(message, history || []);
+      res.json({ reply });
+    }
   } catch (err) {
     console.error('Chat error:', err);
     res.status(500).json({ error: err.message || 'Failed to generate response' });

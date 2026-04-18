@@ -38,27 +38,27 @@ const ProtectedLayout = () => {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex h-screen w-full relative overflow-hidden font-sans bg-slate-100 dark:bg-[#050b14]">
-      {/* Ambient background gradient */}
-      <div
-        className="fixed inset-0 opacity-15 pointer-events-none blur-[80px] transition-opacity duration-500 hidden dark:block"
-        style={{
-          backgroundImage: `radial-gradient(at 40% 20%, var(--color-secondary) 0px, transparent 50%),
-            radial-gradient(at 80% 0%, var(--color-primary) 0px, transparent 50%),
-            radial-gradient(at 0% 50%, #ec4899 0px, transparent 50%)`
-        }}
-      />
+    <div className="flex h-screen w-full relative overflow-hidden font-sans bg-slate-50 dark:bg-black">
+      {/* Premium Glass Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/20 rounded-full blur-[80px] animate-blob"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[35%] h-[35%] bg-blue-600/15 rounded-full blur-[80px] animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[45%] h-[45%] bg-pink-500/10 rounded-full blur-[80px] animate-blob animation-delay-4000"></div>
+        
+        {/* Subtle noise overlay (using translucent black for texture) */}
+        <div className="absolute inset-0 bg-black/[0.02] opacity-20 pointer-events-none"></div>
+      </div>
 
       {user?.isAdmin ? <Sidebar /> : <BrandiesSidebar />}
 
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10 mt-4 mr-4 mb-4 rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-sm bg-white dark:bg-[#050b14] transition-all duration-300">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10 mt-4 mr-4 mb-4 rounded-[2.5rem] glass-premium sidebar-transition shadow-2xl">
         <TopBar />
-        <main className="flex-1 overflow-y-auto transition-colors duration-500">
+        <main className="flex-1 overflow-y-auto transition-colors duration-500 no-scrollbar">
           <Outlet />
         </main>
       </div>
 
-      {/* Global Floating AI Assistant - Stays on top of everything! */}
+      {/* Global Floating AI Assistant */}
       {location.pathname === '/brandies' && <AIAssistantWidget />}
     </div>
   );

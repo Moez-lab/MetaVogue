@@ -20,7 +20,10 @@ export const AIAssistantWidget = () => {
     const msg = input.trim();
     if (!msg || isLoading) return;
 
-    setMessages(prev => [...prev, { role: 'user', content: msg }]);
+    const newUserMessage = { role: 'user', content: msg };
+    const initialModelMessage = { role: 'model', content: '' };
+
+    setMessages(prev => [...prev, newUserMessage, initialModelMessage]);
     setInput('');
     setIsLoading(true);
 
@@ -28,20 +31,61 @@ export const AIAssistantWidget = () => {
       const response = await fetch('http://localhost:3001/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, history: messages })
+        body: JSON.stringify({ message: msg, history: messages, stream: true })
       });
 
-      const data = await response.json();
+      if (!response.body) throw new Error('No response body');
 
-      setMessages(prev => [...prev, {
-        role: 'model',
-        content: data.reply || 'Something went wrong.'
-      }]);
-    } catch {
-      setMessages(prev => [...prev, {
-        role: 'model',
-        content: 'Connection issue. Please try again.'
-      }]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let buffer = ''; // Buffer to handle partial lines across chunks
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        buffer += decoder.decode(value, { stream: !done });
+
+        // Split by the double newline that separates SSE data events
+        const parts = buffer.split('\n\n');
+        
+        // The last part might be incomplete, so we keep it in the buffer
+        buffer = parts.pop() || '';
+
+        for (const part of parts) {
+          if (part.startsWith('data: ')) {
+            const dataStr = part.replace('data: ', '');
+            if (dataStr === '[DONE]') break;
+
+            try {
+              const parsed = JSON.parse(dataStr);
+              if (parsed.chunk) {
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastIndex = updated.length - 1;
+                  const last = { ...updated[lastIndex] };
+                  if (last.role === 'model') {
+                    last.content += parsed.chunk;
+                    updated[lastIndex] = last;
+                  }
+                  return updated;
+                });
+              }
+            } catch (e) {
+              console.warn('Incomplete JSON in stream part, will retry:', dataStr);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      setMessages(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.role === 'model' && !last.content) {
+          last.content = 'Connection issue. Please try again.';
+        }
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }

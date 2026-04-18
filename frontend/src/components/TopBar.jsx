@@ -36,9 +36,9 @@ export const TopBar = () => {
     const recentOrders = orders.slice(0, 5);
 
     return (
-        <div className="h-20 flex items-center justify-between px-8 transition-colors duration-500 sticky top-0 z-40">
+        <div className="h-20 flex items-center justify-between px-8 transition-colors duration-500 sticky top-0 z-40 bg-transparent">
             {/* Status Pill */}
-            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm">
+            <div className="flex items-center gap-3 px-4 py-2 rounded-full glass-premium border-white/10 shadow-lg">
                 <div className="flex items-center gap-2">
                     <span className="relative flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -120,18 +120,36 @@ export const TopBar = () => {
                     </div>
                 )}
 
-                {/* Theme Toggle */}
-                <button
-                    onClick={toggleTheme}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all duration-300 group relative overflow-hidden"
-                >
-                    <div className="relative z-10 text-slate-600 dark:text-yellow-400 transition-transform duration-500 rotate-0 dark:rotate-180">
-                        {theme === 'dark' ? <Icon name="Sun" size={20} /> : <Icon name="Moon" size={20} />}
-                    </div>
+                {/* Premium Glass Theme Toggle */}
+                <div className="relative flex items-center">
+                    <button
+                        onClick={toggleTheme}
+                        className="group relative flex items-center h-10 w-24 rounded-full p-1 transition-all duration-500 glass-premium overflow-hidden border-white/10"
+                    >
+                        {/* Shifting Labels */}
+                        <div className="absolute inset-0 flex items-center justify-between px-3 w-full pointer-events-none">
+                            <span className={`text-[10px] font-black uppercase tracking-tighter transition-all duration-500 ${theme === 'dark' ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'} text-slate-400`}>
+                                Dark
+                            </span>
+                            <span className={`text-[10px] font-black uppercase tracking-tighter transition-all duration-500 ${theme === 'light' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'} text-slate-500`}>
+                                Light
+                            </span>
+                        </div>
 
-                    {/* Hover Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
+                        {/* Sliding Knob */}
+                        <div 
+                            className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ease-out toggle-knob
+                            ${theme === 'dark' ? 'translate-x-12' : 'translate-x-0'}`}
+                        >
+                            <div className={`transition-all duration-500 transform ${theme === 'dark' ? 'rotate-0 text-cyan-400' : 'rotate-180 text-amber-500'}`}>
+                                {theme === 'dark' ? <Icon name="Moon" size={16} /> : <Icon name="Sun" size={16} />}
+                            </div>
+                        </div>
+
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </button>
+                </div>
             </div>
         </div>
     );

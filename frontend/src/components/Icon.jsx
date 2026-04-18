@@ -49,6 +49,10 @@ export const Icon = ({ name, size = 24, className = "" }) => {
         Swatch: <><rect x="2" y="2" width="20" height="8" rx="2" ry="2" /><rect x="2" y="14" width="20" height="8" rx="2" ry="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" /></>,
         PlusCircle: <><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></>,
         Key: <><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4-4"/></>,
+        ChevronRight: <polyline points="9 18 15 12 9 6" />,
+        ChevronLeft: <polyline points="15 18 9 12 15 6" />,
+        ChevronDown: <polyline points="6 9 12 15 18 9" />,
+        ChevronUp: <polyline points="18 15 12 9 6 15" />,
     };
 
     return (
