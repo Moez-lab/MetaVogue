@@ -117,7 +117,7 @@ const App = () => {
         <Route path="/feature-extractor" element={<FeatureExtractorView />} />
         <Route path="/analytics"         element={<AnalyticsView />} />
         <Route path="/my-orders"         element={<MyOrdersView />} />
-        <Route path="/nano-banana"       element={<NanoBananaView />} />
+        <Route path="/image-generator"       element={<NanoBananaView />} />
         {/* Catch-all: redirect unknown paths to home */}
         <Route path="*" element={<Navigate to={homePath} replace />} />
       </Route>

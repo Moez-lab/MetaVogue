@@ -58,7 +58,7 @@ export const Sidebar = () => {
 
     const toolItems = [
         { icon: "Cube", label: "Model Studio", path: "/model" },
-        { icon: "Banana", label: "Nano Banana", path: "/nano-banana" },
+        { icon: "Sparkles", label: "Image Generator", path: "/image-generator" },
         { icon: "Cpu", label: "Feature Extractor", path: "/feature-extractor" },
         { icon: "Video", label: "Video Gen", path: "/video" },
     ];
