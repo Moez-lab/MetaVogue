@@ -6,6 +6,7 @@ import { UPLOAD_DIR } from './config/index.js';
 import { initRAG } from './services/ragService.js';
 import extractRouter from './routes/extract.js';
 import apiRouter from './routes/api.js';
+import comfyRouter from './routes/comfy.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Routes
 app.use('/api/extract', extractRouter);
+app.use('/api/comfy', comfyRouter);
 app.use('/api', apiRouter);
 
 export default app;
