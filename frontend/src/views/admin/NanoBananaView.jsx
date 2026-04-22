@@ -129,8 +129,7 @@ export const NanoBananaView = () => {
     // ── Basic State ──────────────────────────────────────────────────
     const [prompt, setPrompt] = useState('');
     const [negativePrompt, setNegativePrompt] = useState('blurry, bad quality, distorted, extra limbs, low resolution');
-    const [frontImage, setFrontImage] = useState(null);
-    const [backImage, setBackImage] = useState(null);
+    const [referenceImage, setReferenceImage] = useState(null);
     
     // ── Advanced Parameters ──────────────────────────────────────────
     const [steps, setSteps] = useState(8);
@@ -144,7 +143,7 @@ export const NanoBananaView = () => {
     const [images, setImages] = useState([]); 
     const [progress, setProgress] = useState(0);
 
-    const canProcess = (prompt.trim() || frontImage || backImage) && !processing;
+    const canProcess = (prompt.trim() || referenceImage) && !processing;
 
     const handleProcess = async () => {
         if (!canProcess) return;
@@ -154,6 +153,21 @@ export const NanoBananaView = () => {
 
         try {
             setProgress(20);
+            let referenceImageUrl = null;
+            if (referenceImage && referenceImage.file) {
+                const formData = new FormData();
+                formData.append('file', referenceImage.file);
+                const uploadRes = await fetch('http://localhost:3001/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    referenceImageUrl = uploadData.url;
+                }
+            }
+
+            setProgress(40);
             const response = await fetch('http://localhost:3001/api/comfy/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -163,7 +177,8 @@ export const NanoBananaView = () => {
                     steps,
                     cfg,
                     batchSize,
-                    seed: seed === -1 ? -1 : parseInt(seed)
+                    seed: seed === -1 ? -1 : parseInt(seed),
+                    referenceImage: referenceImageUrl
                 })
             });
 
@@ -192,8 +207,7 @@ export const NanoBananaView = () => {
 
     const handleReset = () => {
         setPrompt('');
-        setFrontImage(null);
-        setBackImage(null);
+        setReferenceImage(null);
         setImages([]);
         setProgress(0);
     };
@@ -237,37 +251,49 @@ export const NanoBananaView = () => {
                     </div>
                 </div>
 
-                {/* ── Main Input Grid ── */}
                 <div className="space-y-8">
-                    
-                    {/* Prompts Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Positive Prompt */}
-                        <div className="bg-[#111F2D]/60 backdrop-blur-xl rounded-3xl border border-[#28394B] shadow-xl p-6 space-y-4 group transition-all duration-500 hover:border-[#38506A]">
-                            <label className="text-[10px] font-black uppercase text-[#38506A] tracking-widest flex items-center gap-2">
-                                <Icon name="Zap" size={14} className="fill-current" /> Positive Vision
-                            </label>
-                            <textarea
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                rows={4}
-                                className="w-full bg-[#071018]/50 border border-[#28394B] rounded-2xl p-4 text-sm text-slate-300 focus:text-white focus:border-[#38506A] focus:ring-1 focus:ring-[#38506A]/50 outline-none resize-none transition-all placeholder-slate-500"
-                                placeholder="Describe the garment details, fabric, lighting..."
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Reference Image */}
+                        <div className="lg:col-span-1">
+                            <ImageUploadZone 
+                                label="Reference Style" 
+                                sublabel="Reference Image" 
+                                icon="Image" 
+                                value={referenceImage} 
+                                onChange={setReferenceImage}
+                                accentColor="yellow"
                             />
                         </div>
 
-                        {/* Negative Prompt */}
-                        <div className="bg-[#111F2D]/60 backdrop-blur-xl rounded-3xl border border-[#28394B] shadow-xl p-6 space-y-4 transition-all duration-500 hover:border-red-900/40">
-                            <label className="text-[10px] font-black uppercase text-red-700 tracking-widest flex items-center gap-2">
-                                <Icon name="MinusCircle" size={14} /> Negative Constraints
-                            </label>
-                            <textarea
-                                value={negativePrompt}
-                                onChange={(e) => setNegativePrompt(e.target.value)}
-                                rows={4}
-                                className="w-full bg-[#071018]/50 border border-[#28394B] rounded-2xl p-4 text-sm text-slate-300 outline-none resize-none focus:border-red-900/40 transition-all placeholder-slate-500"
-                                placeholder="What to exclude (e.g. blurry, low quality)..."
-                            />
+                        {/* Prompts Section */}
+                        <div className="lg:col-span-2 space-y-6">
+                            {/* Positive Prompt */}
+                            <div className="bg-[#111F2D]/60 backdrop-blur-xl rounded-3xl border border-[#28394B] shadow-xl p-6 space-y-4 group transition-all duration-500 hover:border-[#38506A]">
+                                <label className="text-[10px] font-black uppercase text-[#38506A] tracking-widest flex items-center gap-2">
+                                    <Icon name="Zap" size={14} className="fill-current" /> Positive Vision
+                                </label>
+                                <textarea
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    rows={4}
+                                    className="w-full bg-[#071018]/50 border border-[#28394B] rounded-2xl p-4 text-sm text-slate-300 focus:text-white focus:border-[#38506A] focus:ring-1 focus:ring-[#38506A]/50 outline-none resize-none transition-all placeholder-slate-500"
+                                    placeholder="Describe the garment details, fabric, lighting..."
+                                />
+                            </div>
+
+                            {/* Negative Prompt */}
+                            <div className="bg-[#111F2D]/60 backdrop-blur-xl rounded-3xl border border-[#28394B] shadow-xl p-6 space-y-4 transition-all duration-500 hover:border-red-900/40">
+                                <label className="text-[10px] font-black uppercase text-red-700 tracking-widest flex items-center gap-2">
+                                    <Icon name="MinusCircle" size={14} /> Negative Constraints
+                                </label>
+                                <textarea
+                                    value={negativePrompt}
+                                    onChange={(e) => setNegativePrompt(e.target.value)}
+                                    rows={4}
+                                    className="w-full bg-[#071018]/50 border border-[#28394B] rounded-2xl p-4 text-sm text-slate-300 outline-none resize-none focus:border-red-900/40 transition-all placeholder-slate-500"
+                                    placeholder="What to exclude (e.g. blurry, low quality)..."
+                                />
+                            </div>
                         </div>
                     </div>
 
