@@ -41,4 +41,14 @@ app.use('/api/extract', extractRouter);
 app.use('/api/comfy', comfyRouter);
 app.use('/api', apiRouter);
 
+// Global Error Handler for API routes
+app.use((err, req, res, next) => {
+  console.error('[Global Error]', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    success: false
+  });
+});
+
 export default app;
+

@@ -8,6 +8,32 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const COMFY_URL = 'http://127.0.0.1:8188';
 
+async function uploadToComfy(imagePath, filename) {
+  try {
+    const fileBuffer = await fs.readFile(imagePath);
+    const formData = new FormData();
+    const blob = new Blob([fileBuffer]);
+    formData.append('image', blob, filename);
+    formData.append('overwrite', 'true');
+
+    const response = await fetch(`${COMFY_URL}/upload/image`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`ComfyUI upload failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.name;
+  } catch (error) {
+    console.error('[ComfyUI] Upload Error:', error);
+    throw error;
+  }
+}
+
+
 router.post('/generate', async (req, res) => {
   try {
     const { 
@@ -80,6 +106,113 @@ router.post('/generate', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+router.post('/vogue-changer', async (req, res) => {
+  try {
+    const { 
+      personImage, 
+      clothImage, 
+      positivePrompt, 
+      negativePrompt,
+      segmentationPrompt,
+      denoise = 1, 
+      ipadapterWeight = 1,
+      steps = 20, 
+      cfg = 8, 
+      seed = -1 
+    } = req.body;
+
+
+    const currentSeed = seed === -1 ? Math.floor(Math.random() * 1000000000000000) : seed;
+    
+    console.log(`[ComfyUI] Vogue Changer Request. Seed: ${currentSeed}, Denoise: ${denoise}`);
+    console.log(`[ComfyUI] Paths: person=${personImage}, cloth=${clothImage}`);
+
+
+    // Load the workflow
+    const workflowPath = path.join(__dirname, '../../../cloth changing  (2).json');
+    const workflowRaw = await fs.readFile(workflowPath, 'utf-8');
+
+    const workflow = JSON.parse(workflowRaw);
+
+    // Handle Person Image
+    if (personImage) {
+      const filename = path.basename(personImage);
+      // Ensure we don't have a leading slash that might mess up path.join on Windows
+      const relativeImage = personImage.startsWith('/') ? personImage.slice(1) : personImage;
+      const fullPath = path.resolve(__dirname, '../../public', relativeImage);
+      console.log(`[ComfyUI] Uploading Person Image: ${fullPath}`);
+      const comfyFilename = await uploadToComfy(fullPath, filename);
+      if (workflow["4"]?.inputs) workflow["4"].inputs.image = comfyFilename;
+    }
+
+    // Handle Cloth Image
+    if (clothImage) {
+      const filename = path.basename(clothImage);
+      const relativeImage = clothImage.startsWith('/') ? clothImage.slice(1) : clothImage;
+      const fullPath = path.resolve(__dirname, '../../public', relativeImage);
+      console.log(`[ComfyUI] Uploading Cloth Image: ${fullPath}`);
+      const comfyFilename = await uploadToComfy(fullPath, filename);
+      if (workflow["5"]?.inputs) workflow["5"].inputs.image = comfyFilename;
+    }
+
+
+    // Update Node 7 (Positive Prompt)
+    if (workflow["7"]?.inputs) {
+      workflow["7"].inputs.text = positivePrompt || "A photo of a girl wearing a plain black t-shirt, outdoors, high quality";
+    }
+
+    // Update Node 8 (Negative Prompt)
+    if (workflow["8"]?.inputs) {
+      workflow["8"].inputs.text = negativePrompt || "blurry, bad quality, distorted, extra limbs, low resolution";
+    }
+
+    // Update Node 9 (IPAdapter Weight)
+    if (workflow["9"]?.inputs) {
+      workflow["9"].inputs.weight = parseFloat(ipadapterWeight);
+    }
+
+
+
+    // Update Node 10 (KSampler settings)
+    if (workflow["10"]?.inputs) {
+      workflow["10"].inputs.denoise = parseFloat(denoise);
+      workflow["10"].inputs.steps = parseInt(steps);
+      workflow["10"].inputs.cfg = parseFloat(cfg);
+      workflow["10"].inputs.seed = currentSeed;
+    }
+
+    // Update Node 18 (Segmentation Prompt)
+    if (workflow["18"]?.inputs) {
+      workflow["18"].inputs.prompt = segmentationPrompt || "dark blue t-shirt";
+    }
+
+    // Send to ComfyUI
+    const response = await fetch(`${COMFY_URL}/prompt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`ComfyUI error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const promptId = data.prompt_id;
+    console.log(`[ComfyUI] Vogue Changer Prompt submitted. ID: ${promptId}`);
+
+    // Poll for the result
+    const images = await pollForResult(promptId);
+
+    res.json({ success: true, images, promptId });
+  } catch (error) {
+    console.error('[ComfyUI] Vogue Changer Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 async function pollForResult(promptId) {
   const maxAttempts = 120; // 2 minutes max

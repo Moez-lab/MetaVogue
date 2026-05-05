@@ -990,7 +990,7 @@ def extract_features(image_path, visualize=True):
 
 if __name__ == "__main__":
     # Default path
-    image_path = r"C:\Users\mueez\OneDrive\Desktop\feature-extractor\person.jpg"
+    image_path = r"C:\Users\ahads\OneDrive\Desktop\feature-extractor\person.jpg"
     reference_height_cm = 170.0 # Default fallback
 
     # Check for command line arguments

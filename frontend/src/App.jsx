@@ -21,7 +21,9 @@ import { UploadStudioView } from './views/admin/UploadStudioView';
 import { VideoStudioView } from './views/admin/VideoStudioView';
 import { TextureStudioView } from './views/admin/TextureStudioView';
 import { FeatureExtractorView } from './views/admin/FeatureExtractorView';
+import { VogueChangerView } from './views/admin/VogueChangerView';
 import { NanoBananaView } from './views/admin/NanoBananaView';
+
 // ── Customer Views ───────────────────────────────────────────────────
 import { BrandiesView } from './views/customer/BrandiesView';
 import { MyOrdersView } from './views/customer/MyOrdersView';
@@ -115,7 +117,9 @@ const App = () => {
         <Route path="/orders"            element={<OrdersView />} />
         <Route path="/admin-users"       element={<AdminUsersView />} />
         <Route path="/feature-extractor" element={<FeatureExtractorView />} />
+        <Route path="/vogue-changer"     element={<VogueChangerView />} />
         <Route path="/analytics"         element={<AnalyticsView />} />
+
         <Route path="/my-orders"         element={<MyOrdersView />} />
         <Route path="/image-generator"       element={<NanoBananaView />} />
         {/* Catch-all: redirect unknown paths to home */}

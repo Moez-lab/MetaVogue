@@ -19,5 +19,5 @@ export const FEATURE_EXTRACTOR_SCRIPT = path.join(
 export const PREFERRED_PYTHON_PATH =
   process.env.PYTHON_PATH ||
   (process.platform === 'win32'
-    ? 'C:\\Users\\mueez\\anaconda3\\envs\\feature-extractor\\python.exe'
+    ? 'C:\\Users\\ahads\\anaconda3\\envs\\feature-extractor\\python.exe'
     : '/home/researchcandidate/miniconda3/envs/feature-extractor/bin/python');
