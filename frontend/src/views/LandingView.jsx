@@ -273,9 +273,6 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-black mb-4">Seamless Workflow</h2>
-                        <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-                            From base mesh to fully textured asset in one click.
-                        </p>
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-12 mb-24">
