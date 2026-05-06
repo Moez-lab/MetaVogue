@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+export const BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = `${BASE_URL}/api`;
 
 const handleResponse = async (response) => {
   if (!response.ok) {

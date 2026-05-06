@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
+import { BASE_URL } from '../../services/api';
 
 export const MyOrdersView = () => {
     const { orders, user, updateOrderStatus, addOrderComment } = useGlobal();
@@ -120,7 +121,7 @@ export const MyOrdersView = () => {
                                 <div className="w-full md:w-48 shrink-0">
                                     <div className="w-full h-48 bg-slate-100 dark:bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
                                         {order.shirtImage ? (
-                                            <img src={order.shirtImage} alt="Garment" className="w-full h-full object-contain" />
+                                            <img src={order.shirtImage?.startsWith('http') ? order.shirtImage : `${BASE_URL}${order.shirtImage}`} alt="Garment" className="w-full h-full object-contain" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-400">
                                                 <Icon name="Shirt" size={32} />
@@ -178,7 +179,7 @@ export const MyOrdersView = () => {
                                                 {order.deliverables.map((d, idx) => (
                                                     <a
                                                         key={idx}
-                                                        href={d.url}
+                                                        href={d.url?.startsWith('http') ? d.url : `${BASE_URL}${d.url}`}
                                                         download={d.name}
                                                         className="flex items-center justify-between p-3 bg-white dark:bg-black/20 border border-green-500/20 rounded-lg hover:bg-green-500/5 transition-all group"
                                                     >

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
 import { UploadZone } from '../../components/UploadZone';
-import { uploadFile } from '../../services/api';
+import { uploadFile, BASE_URL } from '../../services/api';
 
 export const BrandiesView = () => {
     const { addOrder, user, orders } = useGlobal();
@@ -237,7 +237,11 @@ export const BrandiesView = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <UploadZone onFileSelect={handleFileSelect} />
+                                            <UploadZone 
+                                                onFileSelect={handleFileSelect} 
+                                                label="Upload Garment" 
+                                                sublabel="Drag & drop your apparel file or click to browse."
+                                            />
                                         )}
                                     </div>
 
@@ -293,7 +297,11 @@ export const BrandiesView = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <UploadZone onFileSelect={handleReferenceSelect} title="Upload Reference" subtext="Drag & drop or click to browse" />
+                                            <UploadZone 
+                                                onFileSelect={handleReferenceSelect} 
+                                                label="Upload Reference Model" 
+                                                sublabel="Drag & drop a reference image of the model or click to browse."
+                                            />
                                         )}
 
                                         {/* Height Input (shown when reference image is uploaded) */}
@@ -474,7 +482,7 @@ export const BrandiesView = () => {
                                         <div className="flex flex-col md:flex-row gap-6">
                                             {order.shirtImage ? (
                                                 <div className="w-32 h-32 bg-black/40 rounded-xl overflow-hidden shrink-0 border border-white/5">
-                                                    <img src={order.shirtImage} alt="Garment" className="w-full h-full object-contain p-2" />
+                                                    <img src={order.shirtImage?.startsWith('http') ? order.shirtImage : `${BASE_URL}${order.shirtImage}`} alt="Garment" className="w-full h-full object-contain p-2" />
                                                 </div>
                                             ) : (
                                                 <div className="w-32 h-32 bg-black/40 rounded-xl flex items-center justify-center text-gray-600 shrink-0 border border-white/5">
@@ -502,7 +510,7 @@ export const BrandiesView = () => {
                                                     </div>
                                                     
                                                     {order.status === 'Completed' && order.deliverables && order.deliverables.length > 0 && (
-                                                        <a href={order.deliverables[order.deliverables.length - 1].url} download target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl font-bold transition-colors whitespace-nowrap">
+                                                        <a href={order.deliverables[order.deliverables.length - 1].url?.startsWith('http') ? order.deliverables[order.deliverables.length - 1].url : `${BASE_URL}${order.deliverables[order.deliverables.length - 1].url}`} download target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl font-bold transition-colors whitespace-nowrap">
                                                             <Icon name="Download" size={16} /> Download Final
                                                         </a>
                                                     )}

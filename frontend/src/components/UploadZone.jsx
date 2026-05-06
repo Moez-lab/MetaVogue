@@ -1,7 +1,13 @@
 import { useState, useRef } from 'react';
 import { Icon } from './Icon';
 
-export const UploadZone = ({ onFileSelect, accept = "image/*", maxSize = 10485760 }) => { // 10MB default
+export const UploadZone = ({ 
+    onFileSelect, 
+    accept = "image/*", 
+    maxSize = 10485760,
+    label = "Drop Source Material",
+    sublabel = "Drag & drop your file or click to browse database."
+}) => { // 10MB default
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState(null);
     const inputRef = useRef(null);
@@ -108,11 +114,11 @@ export const UploadZone = ({ onFileSelect, accept = "image/*", maxSize = 1048576
                     </div>
 
                     <h3 className={`text-xl font-bold mb-2 transition-colors ${dragActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-900 dark:text-white'}`}>
-                        {dragActive ? 'Initiating Scan...' : 'Drop Source Material'}
+                        {dragActive ? 'Initiating Scan...' : label}
                     </h3>
 
                     <p className="text-slate-500 dark:text-gray-500 text-sm mb-6 max-w-xs mx-auto">
-                        Drag & drop your garment file or click to browse database.
+                        {sublabel}
                     </p>
 
                     {error && (

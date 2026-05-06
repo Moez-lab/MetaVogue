@@ -213,6 +213,156 @@ router.post('/vogue-changer', async (req, res) => {
   }
 });
 
+router.post('/meta-vogue-im', async (req, res) => {
+  try {
+    const { 
+      baseImage, 
+      outfitPrompt, 
+      backgroundPrompt, 
+      facePrompt, 
+      negativePrompt,
+      outputType, 
+      ipadapterWeight = 0,
+      steps = 20, 
+      cfg = 8, 
+      seed = -1 
+    } = req.body;
+
+    const currentSeed = seed === -1 ? Math.floor(Math.random() * 1000000000000000) : seed;
+    console.log(`[ComfyUI] Meta Vogue IM Request. Seed: ${currentSeed}, OutputType: ${outputType}, IPWeight: ${ipadapterWeight}`);
+
+    // Load the workflow
+    const workflowPath = path.join(__dirname, '../../../meta-vouge-image-im.json');
+    const workflowRaw = await fs.readFile(workflowPath, 'utf-8');
+    const workflow = JSON.parse(workflowRaw);
+
+    // Handle Base Image
+    if (baseImage) {
+      const filename = path.basename(baseImage);
+      const relativeImage = baseImage.startsWith('/') ? baseImage.slice(1) : baseImage;
+      const fullPath = path.resolve(__dirname, '../../public', relativeImage);
+      const comfyFilename = await uploadToComfy(fullPath, filename);
+      if (workflow["10"]?.inputs) workflow["10"].inputs.image = comfyFilename;
+    }
+
+    // Update Node 32 (Outfit & Background Prompt)
+    if (workflow["32"]?.inputs) {
+      const combinedPrompt = [outfitPrompt, backgroundPrompt].filter(Boolean).join(", ");
+      workflow["32"].inputs.text_g = combinedPrompt;
+      workflow["32"].inputs.text_l = combinedPrompt;
+    }
+
+    // Update Node 33 (Negative Prompt)
+    if (workflow["33"]?.inputs) {
+      workflow["33"].inputs.text_g = negativePrompt;
+      workflow["33"].inputs.text_l = negativePrompt;
+    }
+
+    // Update Node 34 (Face Prompt)
+    if (workflow["34"]?.inputs) {
+      workflow["34"].inputs.text_g = facePrompt;
+      workflow["34"].inputs.text_l = facePrompt;
+    }
+
+    // Update Node 16 (Segmentation Prompt)
+    if (workflow["16"]?.inputs) {
+       // If the user wants to change the background, we must mask it so it can be inpainted.
+       if (backgroundPrompt && backgroundPrompt.trim().length > 0) {
+         workflow["16"].inputs.prompt = "clothes, body, background";
+       } else {
+         workflow["16"].inputs.prompt = "clothes, body";
+       }
+    }
+
+    // Update Node 12 (IPAdapter weight)
+    if (workflow["12"]?.inputs) {
+      workflow["12"].inputs.weight = parseFloat(ipadapterWeight);
+    }
+
+    // Update Node 2 (KSampler settings)
+    if (workflow["2"]?.inputs) {
+      workflow["2"].inputs.steps = parseInt(steps);
+      workflow["2"].inputs.cfg = parseFloat(cfg);
+      workflow["2"].inputs.seed = currentSeed;
+    }
+
+    // Send to ComfyUI
+    const response = await fetch(`${COMFY_URL}/prompt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`ComfyUI error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const promptId = data.prompt_id;
+    console.log(`[ComfyUI] Meta Vogue IM Prompt submitted. ID: ${promptId}`);
+
+    // Target node based on output type
+    const targetNodeId = outputType === 'outfit' ? '4' : '26';
+    const images = await pollForResultWithNodeFilter(promptId, targetNodeId);
+
+    res.json({ success: true, images, promptId });
+  } catch (error) {
+    console.error('[ComfyUI] Meta Vogue IM Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+async function pollForResultWithNodeFilter(promptId, targetNodeId) {
+  const maxAttempts = 120; // 2 minutes max
+  console.log(`[ComfyUI] Polling for result of ${promptId} (Target Node: ${targetNodeId})...`);
+  
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, 1000));
+    
+    try {
+      const historyRes = await fetch(`${COMFY_URL}/history/${promptId}`);
+      if (!historyRes.ok) continue;
+
+      const history = await historyRes.json();
+      
+      if (history[promptId]) {
+        console.log(`[ComfyUI] Found history for ${promptId}`);
+        const outputs = history[promptId].outputs;
+        const images = [];
+
+        // Check if the specific node has output
+        if (outputs[targetNodeId] && outputs[targetNodeId].images) {
+           for (const image of outputs[targetNodeId].images) {
+              const url = `http://localhost:3001/api/comfy/view?filename=${image.filename}&subfolder=${image.subfolder}&type=${image.type}`;
+              images.push(url);
+           }
+        }
+
+        // If target node didn't produce an image, maybe fall back to getting whatever image we can
+        if (images.length === 0) {
+            for (const nodeId in outputs) {
+              if (outputs[nodeId].images) {
+                for (const image of outputs[nodeId].images) {
+                  const url = `http://localhost:3001/api/comfy/view?filename=${image.filename}&subfolder=${image.subfolder}&type=${image.type}`;
+                  images.push(url);
+                }
+              }
+            }
+        }
+
+        if (images.length > 0) {
+          console.log(`[ComfyUI] Found ${images.length} images.`);
+          return images;
+        }
+      }
+    } catch (err) {
+      console.warn(`[ComfyUI] Polling attempt ${i} failed:`, err.message);
+    }
+  }
+  throw new Error('Timeout waiting for ComfyUI result');
+}
+
 
 async function pollForResult(promptId) {
   const maxAttempts = 120; // 2 minutes max

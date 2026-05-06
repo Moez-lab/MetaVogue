@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Icon } from '../../components/Icon';
+import { BASE_URL } from '../../services/api';
 
 // ── Image Upload Zone ──────────────────────────────────────────────────
 const ImageUploadZone = ({ label, sublabel, icon, value, onChange, accentColor = 'cyan' }) => {
@@ -111,7 +112,7 @@ const ResultCard = ({ label, imageSrc }) => {
                     <Icon name="Download" size={14} className="text-slate-400" />
                 </button>
             </div>
-            <img src={imageSrc} alt={`${label} result`} className="w-full h-80 object-contain bg-black/30 rounded-b-2xl" />
+            <img src={imageSrc?.startsWith('http') ? imageSrc : `${BASE_URL}${imageSrc}`} alt={`${label} result`} className="w-full h-80 object-contain bg-black/30 rounded-b-2xl" />
         </div>
     );
 };
@@ -152,7 +153,7 @@ export const VogueChangerView = () => {
             setProgress(10);
             const personFormData = new FormData();
             personFormData.append('file', personImage.file);
-            const personUploadRes = await fetch('http://localhost:3001/api/upload', {
+            const personUploadRes = await fetch(`${BASE_URL}/api/upload`, {
                 method: 'POST',
                 body: personFormData
             });
@@ -163,7 +164,7 @@ export const VogueChangerView = () => {
             setProgress(25);
             const clothFormData = new FormData();
             clothFormData.append('file', clothImage.file);
-            const clothUploadRes = await fetch('http://localhost:3001/api/upload', {
+            const clothUploadRes = await fetch(`${BASE_URL}/api/upload`, {
                 method: 'POST',
                 body: clothFormData
             });
@@ -172,7 +173,7 @@ export const VogueChangerView = () => {
 
             // 3. Trigger Workflow
             setProgress(40);
-            const response = await fetch('http://localhost:3001/api/comfy/vogue-changer', {
+            const response = await fetch(`${BASE_URL}/api/comfy/vogue-changer`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

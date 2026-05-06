@@ -50,18 +50,18 @@ export const Sidebar = () => {
 
     const menuItems = [
         { icon: "Home", label: "Dashboard", path: "/home", activePaths: ['/admin', '/home'] },
-        { icon: "TrendingUp", label: "Analytics", path: "/analytics" },
+        // { icon: "TrendingUp", label: "Analytics", path: "/analytics" },
         { icon: "Clipboard", label: "Work Tracking", path: "/work-tracking" },
         { icon: "Box", label: "Orders", path: "/orders" },
         { icon: "Users", label: "User Management", path: "/admin-users" },
     ];
 
     const toolItems = [
-        { icon: "Cube", label: "Model Studio", path: "/model" },
+        // { icon: "Cube", label: "Model Studio", path: "/model" },
         { icon: "Shirt", label: "Vogue Changer", path: "/vogue-changer" },
         { icon: "Sparkles", label: "Image Generator", path: "/image-generator" },
         { icon: "Cpu", label: "Feature Extractor", path: "/feature-extractor" },
-
+        { icon: "Cube", label: "2D to 3D", path: "/2d-to-3d" },
         { icon: "Video", label: "Video Gen", path: "/video" },
     ];
 
@@ -104,7 +104,9 @@ export const Sidebar = () => {
                         label={item.label} 
                         collapsed={isCollapsed}
                         onClick={() => navigate(item.path)} 
-                        active={item.activePaths ? item.activePaths.some(p => location.pathname.startsWith(p)) : location.pathname === item.path} 
+                        active={item.activePaths 
+                            ? item.activePaths.some(p => location.pathname === p || location.pathname.startsWith(p + '/')) 
+                            : location.pathname === item.path} 
                     />
                 ))}
 

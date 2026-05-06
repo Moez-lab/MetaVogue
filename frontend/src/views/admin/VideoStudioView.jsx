@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
 import { enhancePromptWithGemini } from '../../utils/gemini';
+import { BASE_URL } from '../../services/api';
 
 export const VideoStudioView = () => {
     const { modelImage, shirtImage } = useGlobal();
@@ -54,7 +55,7 @@ export const VideoStudioView = () => {
                             <div className="flex-1 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-surface">
                                 <p className="text-xs font-bold text-slate-500 mb-2">TARGET MODEL</p>
                                 <div className="aspect-square rounded-lg bg-slate-100 overflow-hidden">
-                                    <img src={modelImage} className="w-full h-full object-cover" alt="Model" />
+                                    <img src={modelImage?.startsWith('http') ? modelImage : `${BASE_URL}${modelImage}`} className="w-full h-full object-cover" alt="Model" />
                                 </div>
                             </div>
                             <div className="flex items-center text-slate-300">
@@ -63,7 +64,7 @@ export const VideoStudioView = () => {
                             <div className="flex-1 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-surface">
                                 <p className="text-xs font-bold text-slate-500 mb-2">GARMENT</p>
                                 <div className="aspect-square rounded-lg bg-slate-100 overflow-hidden">
-                                    <img src={shirtImage} className="w-full h-full object-cover" alt="Garment" />
+                                    <img src={shirtImage?.startsWith('http') ? shirtImage : `${BASE_URL}${shirtImage}`} className="w-full h-full object-cover" alt="Garment" />
                                 </div>
                             </div>
                         </div>
@@ -113,7 +114,7 @@ export const VideoStudioView = () => {
                             </div>
                         ) : progress === 100 ? (
                             <div className="relative w-full h-full">
-                                <img src={modelImage} className="w-full h-full object-cover opacity-80" alt="Video Preview" />
+                                <img src={modelImage?.startsWith('http') ? modelImage : `${BASE_URL}${modelImage}`} className="w-full h-full object-cover opacity-80" alt="Video Preview" />
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <button className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 transition-transform">
                                         <Icon name="Play" size={32} className="text-white ml-1" />

@@ -1,11 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGlobal } from '../context/GlobalContext';
 import { Icon } from './Icon';
+import { BASE_URL } from '../services/api';
 
 export const TopBar = () => {
     const { theme, toggleTheme, unreadNotifications, setCurrentView, orders, user, markNotificationsAsRead } = useGlobal();
     const [showNotifications, setShowNotifications] = useState(false);
+    const [isOnline, setIsOnline] = useState(true);
     const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const checkHealth = async () => {
+            try {
+                const res = await fetch(`${BASE_URL}/api/health`);
+                setIsOnline(res.ok);
+            } catch (err) {
+                setIsOnline(false);
+            }
+        };
+        
+        checkHealth();
+        const interval = setInterval(checkHealth, 30000); // Check every 30s
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -38,18 +55,16 @@ export const TopBar = () => {
     return (
         <div className="h-20 flex items-center justify-between px-8 transition-colors duration-500 sticky top-0 z-40 bg-transparent">
             {/* Status Pill */}
-            <div className="flex items-center gap-3 px-4 py-2 rounded-full glass-premium border-white/10 shadow-lg">
+            <div className="flex items-center gap-3 px-4 py-2 rounded-full glass-premium border-white/10 shadow-lg transition-all duration-500">
                 <div className="flex items-center gap-2">
                     <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-red-400'} opacity-75`}></span>
+                        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOnline ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                     </span>
-                    <span className="text-xs font-mono font-bold text-slate-600 dark:text-emerald-400 tracking-wider uppercase">
-                        System Online
+                    <span className={`text-xs font-mono font-bold tracking-wider uppercase transition-colors duration-500 ${isOnline ? 'text-slate-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                        {isOnline ? 'System Online' : 'System Offline'}
                     </span>
                 </div>
-                <div className="w-px h-4 bg-slate-300 dark:bg-white/10"></div>
-                <span className="text-xs font-mono text-slate-400 dark:text-slate-500">v2.4.0</span>
             </div>
 
             {/* Actions Group */}

@@ -7,6 +7,7 @@ import { initRAG } from './services/ragService.js';
 import extractRouter from './routes/extract.js';
 import apiRouter from './routes/api.js';
 import comfyRouter from './routes/comfy.js';
+import meshyRouter from './routes/meshy.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use('/api/extract', extractRouter);
 app.use('/api/comfy', comfyRouter);
 app.use('/api', apiRouter);
+app.use('/api/meshy', meshyRouter);
 
 // Global Error Handler for API routes
 app.use((err, req, res, next) => {

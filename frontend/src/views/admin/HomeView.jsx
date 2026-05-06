@@ -253,6 +253,7 @@ export const HomeView = () => {
 
         const paidOrders = fOrders.filter(o => o.paymentStatus === 'Paid');
         const revenue = paidOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
+        const totalPotentialRevenue = fOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
         
         const assets = fProjects.reduce((sum, p) => {
             const stepsDone = Object.values(p.steps || {}).filter(s => s === 'done').length;
@@ -261,6 +262,7 @@ export const HomeView = () => {
 
         return {
             revenue,
+            totalPotentialRevenue,
             paidCount: paidOrders.length,
             assets,
             projects: fProjects.length,
@@ -502,8 +504,8 @@ export const HomeView = () => {
                                         <td className="py-5 px-4 text-xs font-bold text-slate-500">{order.id}</td>
                                         <td className="py-5 px-4 text-xs font-black text-yellow-500/80">{new Date(order.date).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                                         <td className="py-5 px-4">
-                                            <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-tighter ${order.paymentStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10' : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/10'}`}>
-                                                {order.paymentStatus === 'Paid' ? 'Delivered' : 'Processing'}
+                                            <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-tighter ${order.status === 'Delivered' || order.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10' : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/10'}`}>
+                                                {order.status === 'Delivered' || order.status === 'Completed' ? 'Delivered' : 'Processing'}
                                             </span>
                                         </td>
                                         <td className="py-5 px-4 text-right text-sm font-black text-white/90 group-hover:text-cyan-400 transition-colors">${order.amount?.toLocaleString() || '920'}</td>
@@ -524,8 +526,20 @@ export const HomeView = () => {
                 <div className="space-y-8">
                     {/* Finance Cards Row */}
                     <div className="grid grid-cols-1 gap-8">
-                         <FinanceCard label="Paid Invoices" value={`$${filteredMetrics.revenue.toLocaleString()}`} progress={filteredMetrics.revenue > 0 ? 15 : 0} icon="FileText" color="bg-purple-500/20 text-purple-400" />
-                         <FinanceCard label="Funds received" value={`$${(filteredMetrics.revenue * 1.5).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} progress={filteredMetrics.revenue > 0 ? 59 : 0} icon="DollarSign" color="bg-emerald-500/20 text-emerald-400" />
+                         <FinanceCard 
+                            label="Paid Invoices" 
+                            value={`$${filteredMetrics.revenue.toLocaleString()}`} 
+                            progress={filteredMetrics.orders.length > 0 ? Math.round((filteredMetrics.paidCount / filteredMetrics.orders.length) * 100) : 0} 
+                            icon="FileText" 
+                            color="bg-purple-500/20 text-purple-400" 
+                         />
+                         <FinanceCard 
+                            label="Funds received" 
+                            value={`$${filteredMetrics.revenue.toLocaleString()}`} 
+                            progress={filteredMetrics.totalPotentialRevenue > 0 ? Math.round((filteredMetrics.revenue / filteredMetrics.totalPotentialRevenue) * 100) : 0} 
+                            icon="DollarSign" 
+                            color="bg-emerald-500/20 text-emerald-400" 
+                         />
                     </div>
                     
                     {/* Workflow Section Re-integrated */}

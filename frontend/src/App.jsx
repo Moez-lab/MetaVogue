@@ -23,6 +23,8 @@ import { TextureStudioView } from './views/admin/TextureStudioView';
 import { FeatureExtractorView } from './views/admin/FeatureExtractorView';
 import { VogueChangerView } from './views/admin/VogueChangerView';
 import { NanoBananaView } from './views/admin/NanoBananaView';
+import { MetaVogueIMView } from './views/admin/MetaVogueIMView';
+import { TwoDToThreeDView } from './views/admin/TwoDToThreeDView';
 
 // ── Customer Views ───────────────────────────────────────────────────
 import { BrandiesView } from './views/customer/BrandiesView';
@@ -121,7 +123,9 @@ const App = () => {
         <Route path="/analytics"         element={<AnalyticsView />} />
 
         <Route path="/my-orders"         element={<MyOrdersView />} />
-        <Route path="/image-generator"       element={<NanoBananaView />} />
+        <Route path="/image-generator"   element={<NanoBananaView />} />
+        <Route path="/meta-vogue-im"     element={<MetaVogueIMView />} />
+        <Route path="/2d-to-3d"          element={<TwoDToThreeDView />} />
         {/* Catch-all: redirect unknown paths to home */}
         <Route path="*" element={<Navigate to={homePath} replace />} />
       </Route>

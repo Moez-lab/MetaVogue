@@ -11,6 +11,9 @@ import { generateAnswer, generateAnswerStream } from '../services/ragService.js'
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
 
+// Health check
+router.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 // ==============================
 // AUTH & USERS
 // ==============================

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGlobal } from '../../context/GlobalContext';
 import { Icon } from '../../components/Icon';
+import { BASE_URL } from '../../services/api';
 
 export const OrdersView = () => {
     const { orders, updateOrderStatus, markNotificationsAsRead, deleteOrder, createProject, setCurrentView, addOrderComment } = useGlobal();
@@ -44,7 +45,8 @@ export const OrdersView = () => {
             const order = orders.find(o => o.id === selectedOrderId);
             const currentDeliverables = order.deliverables || [];
 
-            updateOrderStatus(selectedOrderId, order.status, {
+            updateOrderStatus(selectedOrderId, 'Delivered', {
+                orderStatus: 'Delivered',
                 deliverables: [...currentDeliverables, newDeliverable]
             });
 
@@ -95,7 +97,8 @@ export const OrdersView = () => {
             case 'Pending Approval': return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
             case 'Accepted': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
             case 'Rejected': return 'text-red-400 bg-red-400/10 border-red-400/20';
-            case 'Completed': return 'text-green-400 bg-green-400/10 border-green-400/20';
+            case 'Completed':
+            case 'Delivered': return 'text-green-400 bg-green-400/10 border-green-400/20';
             default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
         }
     };
@@ -212,13 +215,13 @@ export const OrdersView = () => {
                                     <div className="w-48 h-48 bg-slate-100 dark:bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shrink-0 relative group">
                                         {order.shirtImage ? (
                                             <>
-                                                <img src={order.shirtImage} alt="Garment Asset" className="w-full h-full object-contain" />
+                                                <img src={order.shirtImage?.startsWith('http') ? order.shirtImage : `${BASE_URL}${order.shirtImage}`} alt="Garment Asset" className="w-full h-full object-contain" />
                                                 <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-md">
                                                     Garment
                                                 </div>
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <a
-                                                        href={order.shirtImage}
+                                                        href={order.shirtImage?.startsWith('http') ? order.shirtImage : `${BASE_URL}${order.shirtImage}`}
                                                         download={`order-${order.id}-garment.png`}
                                                         className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
                                                         title="Download Garment"
@@ -238,13 +241,13 @@ export const OrdersView = () => {
                                     {order.referenceImage && (
                                         <div className="w-48 shrink-0">
                                             <div className="w-48 h-48 bg-slate-100 dark:bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 relative group">
-                                                <img src={order.referenceImage} alt="Reference" className="w-full h-full object-contain" />
+                                                <img src={order.referenceImage?.startsWith('http') ? order.referenceImage : `${BASE_URL}${order.referenceImage}`} alt="Reference" className="w-full h-full object-contain" />
                                                 <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500/80 rounded text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-md">
                                                     Reference
                                                 </div>
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <a
-                                                        href={order.referenceImage}
+                                                        href={order.referenceImage?.startsWith('http') ? order.referenceImage : `${BASE_URL}${order.referenceImage}`}
                                                         download={`order-${order.id}-reference.png`}
                                                         className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
                                                         title="Download Reference"
@@ -372,7 +375,10 @@ export const OrdersView = () => {
                                                 </div>
                                             )}
 
-                                            <button className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
+                                            <button 
+                                                onClick={() => updateOrderStatus(order.id, 'Delivered', { orderStatus: 'Delivered' })}
+                                                className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                                            >
                                                 <Icon name="Send" size={14} /> Send
                                             </button>
                                             <button
