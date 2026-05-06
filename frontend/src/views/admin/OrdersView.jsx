@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useGlobal } from '../../context/GlobalContext';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { BASE_URL } from '../../services/api';
 
 export const OrdersView = () => {
     const { orders, updateOrderStatus, markNotificationsAsRead, deleteOrder, createProject, setCurrentView, addOrderComment } = useGlobal();
+    const navigate = useNavigate();
     const [showAcceptModal, setShowAcceptModal] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [estimatedDate, setEstimatedDate] = useState('');
@@ -80,6 +82,7 @@ export const OrdersView = () => {
     const handleStartProject = (order) => {
         createProject({
             id: `PRJ-${order.id.replace('ORD-', '')}`,
+            title: `${order.brandName || 'Brand'} Collection`,
             company: order.brandName || 'Brand',
             shirtDesc: order.modelDescription || '',
             modelDesc: order.referenceHeight ? `Height: ${order.referenceHeight}cm` : '',
@@ -88,7 +91,7 @@ export const OrdersView = () => {
                 model: order.referenceImage
             }
         });
-        setCurrentView('home');
+        navigate('/home');
     };
 
     const getStatusColor = (status) => {

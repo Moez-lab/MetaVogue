@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from 'react';
 import { useGlobal } from '../../context/GlobalContext';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 
 // ── Components ───────────────────────────────────────────────────────
@@ -115,12 +116,13 @@ const WorkflowCard = memo(({ project, onCancel, onNew, onStepClick }) => (
                     </div>
                 </div>
                 {[
-                    { step: '02', label: '3D Model', icon: 'Cube', key: 'model', view: 'model' },
-                    { step: '03', label: 'Texture', icon: 'Cpu', key: 'texture', view: 'texture' },
-                    { step: '04', label: 'Garment', icon: 'Upload', key: 'garment', view: 'upload' }
+                    { step: '01', label: 'Image Generator', icon: 'Sparkles', key: 'image', view: 'image-generator' },
+                    { step: '02', label: 'Vogue Changer', icon: 'Shirt', key: 'vogue', view: 'vogue-changer' },
+                    { step: '03', label: '2D to 3D', icon: 'Cube', key: 'model', view: '2d-to-3d' },
+                    { step: '04', label: 'Video Generator', icon: 'Video', key: 'video', view: 'video' }
                 ].map((s, i) => {
                     const isDone = project.steps?.[s.key] === 'done';
-                    const isPrevDone = i === 0 ? true : project.steps?.[['model', 'texture'][i-1]] === 'done';
+                    const isPrevDone = i === 0 ? true : project.steps?.[['image', 'vogue', 'model', 'video'][i-1]] === 'done';
                     const isActive = !isDone && isPrevDone;
 
                     return (
@@ -161,6 +163,7 @@ const WorkflowCard = memo(({ project, onCancel, onNew, onStepClick }) => (
 
 export const HomeView = () => {
     const { setCurrentView, activeProject, allProjects, createProject, cancelProject, user, orders, updateOrderStatus, users } = useGlobal();
+    const navigate = useNavigate();
     
     // Filtering States
     const [timeFilter, setTimeFilter] = useState('all'); // all, year, month, custom
@@ -453,7 +456,7 @@ export const HomeView = () => {
                     items={useMemo(() => {
                         const total = filteredMetrics.projects || 1;
                         const completed = filteredMetrics.allProjects.filter(p => 
-                            p.steps.model === 'done' && p.steps.texture === 'done' && p.steps.garment === 'done'
+                            p.steps && Object.values(p.steps).length > 0 && Object.values(p.steps).every(s => s === 'done')
                         ).length;
                         const inProgress = filteredMetrics.allProjects.filter(p => 
                             Object.values(p.steps).some(s => s === 'done') && 
@@ -547,7 +550,7 @@ export const HomeView = () => {
                         project={activeProject} 
                         onNew={() => setShowProjectModal(true)} 
                         onCancel={cancelProject} 
-                        onStepClick={(view) => setCurrentView(view)} 
+                        onStepClick={(view) => navigate(`/${view}`)} 
                     />
                 </div>
             </div>

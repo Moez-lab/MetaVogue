@@ -161,7 +161,7 @@ export const GlobalProvider = ({ children }) => {
             id: `PRJ-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
             userEmail: user?.email || 'guest',
             status: 'active',
-            steps: { model: 'pending', texture: 'pending', garment: 'pending' },
+            steps: { image: 'pending', vogue: 'pending', model: 'pending', video: 'pending' },
             date: new Date().toISOString(),
             ...details,
             files: { model: null, shirt: null, garment: null, ...(details.files || {}) }
