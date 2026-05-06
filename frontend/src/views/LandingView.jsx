@@ -47,10 +47,6 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                 <div className="max-w-7xl mx-auto relative z-10">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1 space-y-8 text-center lg:text-left">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm animate-fade-in-up">
-                                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                                <span className="text-xs font-medium text-white/80">v2.0 Now Available</span>
-                            </div>
 
                             <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-[1.1] animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                                 The Future of <br />
@@ -235,9 +231,9 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
                                 <Icon name="Cube" size={24} />
                             </div>
-                            <h3 className="text-xl font-bold mb-3">3D Model Generation</h3>
+                            <h3 className="text-xl font-bold mb-3">Model Generation</h3>
                             <p className="text-slate-400 leading-relaxed">
-                                Turn text prompts into production-ready 3D meshes. Compatible with standard industry tools.
+                                Generate highly detailed production-ready models instantly based entirely on your text descriptions.
                             </p>
                         </div>
 
@@ -247,9 +243,9 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                             <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-6 group-hover:scale-110 transition-transform">
                                 <Icon name="Palette" size={24} />
                             </div>
-                            <h3 className="text-xl font-bold mb-3">Smart Texturing</h3>
+                            <h3 className="text-xl font-bold mb-3">3D Conversion</h3>
                             <p className="text-slate-400 leading-relaxed">
-                                Apply realistic fabrics and patterns with context-aware AI mapping technology.
+                                Seamlessly convert 2D garment designs and images into fully-realized 3D models.
                             </p>
                         </div>
 
