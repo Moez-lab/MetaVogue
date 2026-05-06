@@ -1,10 +1,6 @@
 import { Icon } from '../components/Icon';
 import { ModelViewer } from '../components/ModelViewer';
 import logo from '../assets/logo.png';
-import model071 from '../assets/workflow/3d human/textured-model-1764410569071.glb';
-import model152 from '../assets/workflow/3d human/textured-model-1764410686152.glb';
-import shirt2d from '../assets/workflow/clothes/2dshirt.png';
-import shirt3d from '../assets/workflow/clothes/3dshirt.glb';
 import workflowImage from '../assets/workflow/image.png';
 import shirtWebp from '../assets/workflow/shirt.webp';
 import shirtFitting from '../assets/workflow/shirt fitting.png';
