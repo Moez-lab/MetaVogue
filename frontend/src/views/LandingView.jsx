@@ -5,6 +5,10 @@ import model071 from '../assets/workflow/3d human/textured-model-1764410569071.g
 import model152 from '../assets/workflow/3d human/textured-model-1764410686152.glb';
 import shirt2d from '../assets/workflow/clothes/2dshirt.png';
 import shirt3d from '../assets/workflow/clothes/3dshirt.glb';
+import workflowImage from '../assets/workflow/image.png';
+import shirtWebp from '../assets/workflow/shirt.webp';
+import shirtFitting from '../assets/workflow/shirt fitting.png';
+import model2glb from '../assets/workflow/model (2).glb';
 
 export const LandingView = ({ onGetStarted, onSignIn }) => {
     return (
@@ -279,13 +283,15 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-12 mb-24">
-                        {/* Step 1: Base Model */}
+                        {/* Step 1: Prompt */}
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative">
-                                <ModelViewer url={model152} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative p-6 flex flex-col justify-center">
+                                <div className="text-sm text-slate-300 font-mono italic text-left leading-relaxed">
+                                    "[(masterpiece, best quality, ultra-detailed, highres:1.2), 1girl, full body shot, standing in a perfect T-pose, arms extended horizontally, facing the camera, neutral expression, centered, highly detailed anatomy, realistic proportions, wearing a simple form-fitting outfit, solid neutral light gray background, studio lighting, soft shadows, clean edges, 8k resolution, Unreal Engine 5 render style, photorealistic.]"
+                                </div>
                                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                                     <span className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-xs font-bold border border-white/10">
-                                        01. Base Generation
+                                        01. Text Prompt
                                     </span>
                                 </div>
                             </div>
@@ -300,27 +306,27 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                             <Icon name="ArrowDown" size={32} />
                         </div>
 
-                        {/* Step 2: Textured Model */}
+                        {/* Step 2: Generated Image */}
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative">
-                                <ModelViewer url={model071} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative flex items-center justify-center p-2">
+                                <img src={workflowImage} alt="Generated Model" className="w-full h-full object-cover rounded-xl" />
                                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                                     <span className="px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-xs font-bold border border-primary/30 text-white">
-                                        02. Smart Texture Applied
+                                        02. Base Image Generation
                                     </span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-                        {/* Step 1: 2D Shirt Image */}
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-12 mb-24">
+                        {/* Step 1: Input Image */}
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative flex items-center justify-center p-4">
-                                <img src={shirt2d} alt="2D Shirt" className="w-full h-full object-contain" />
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative flex items-center justify-center p-2">
+                                <img src={shirtWebp} alt="Input Image" className="w-full h-full object-cover rounded-xl" />
                                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                                     <span className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-xs font-bold border border-white/10">
-                                        01. 2D Design
+                                        01. Input Image
                                     </span>
                                 </div>
                             </div>
@@ -335,13 +341,47 @@ export const LandingView = ({ onGetStarted, onSignIn }) => {
                             <Icon name="ArrowDown" size={32} />
                         </div>
 
-                        {/* Step 2: 3D Shirt Model */}
+                        {/* Step 2: Output Image */}
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative">
-                                <ModelViewer url={shirt3d} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative flex items-center justify-center p-2">
+                                <img src={shirtFitting} alt="Output Image" className="w-full h-full object-cover rounded-xl" />
                                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                                     <span className="px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-xs font-bold border border-primary/30 text-white">
-                                        02. 3D Asset
+                                        02. Output Image
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+                        {/* Step 1: Input Image */}
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-white/10 overflow-hidden relative flex items-center justify-center p-2">
+                                <img src={shirtFitting} alt="Input Image" className="w-full h-full object-cover rounded-xl" />
+                                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                                    <span className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-xs font-bold border border-white/10">
+                                        01. Input Image
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Arrow */}
+                        <div className="hidden md:flex flex-col items-center gap-2 text-primary animate-pulse">
+                            <Icon name="ArrowRight" size={48} />
+                            <span className="text-xs font-bold tracking-widest uppercase">AI Processing</span>
+                        </div>
+                        <div className="md:hidden text-primary animate-pulse my-4">
+                            <Icon name="ArrowDown" size={32} />
+                        </div>
+
+                        {/* Step 2: 3D Output Model */}
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-[300px] h-[400px] bg-[#161b22] rounded-2xl border border-primary/30 shadow-[0_0_30px_rgba(124,58,237,0.2)] overflow-hidden relative">
+                                <ModelViewer url={model2glb} showDownload={false} cameraPosition={[0, 0, 2.5]} />
+                                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                                    <span className="px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-xs font-bold border border-primary/30 text-white">
+                                        02. 3D Model Generation
                                     </span>
                                 </div>
                             </div>
