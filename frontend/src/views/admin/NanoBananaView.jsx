@@ -128,8 +128,8 @@ const ResultCard = ({ label, imageSrc, accentColor = 'yellow' }) => {
 // ── Main View ─────────────────────────────────────────────────────────
 export const NanoBananaView = () => {
     // ── Basic State ──────────────────────────────────────────────────
-    const [prompt, setPrompt] = useState('');
-    const [negativePrompt, setNegativePrompt] = useState('blurry, bad quality, distorted, extra limbs, low resolution');
+    const [prompt, setPrompt] = useState('(masterpiece, best quality, ultra-detailed, highres:1.2), 1girl, full body shot, standing in a perfect T-pose, arms extended horizontally, facing the camera, neutral expression, centered, highly detailed anatomy, realistic proportions, wearing a simple form-fitting outfit, solid neutral light gray background, studio lighting, soft shadows, clean edges, 8k resolution, Unreal Engine 5 render style, photorealistic.');
+    const [negativePrompt, setNegativePrompt] = useState('(deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong proportions, extra limbs, cloned face, messy background, dramatic lighting, dynamic pose, asymmetrical, cropped, cut off at the feet, watermark, text, signature');
     
     // ── Advanced Parameters ──────────────────────────────────────────
     const [steps, setSteps] = useState(8);
