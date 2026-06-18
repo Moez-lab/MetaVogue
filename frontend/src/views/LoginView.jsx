@@ -167,6 +167,7 @@ export const LoginView = ({ onBack }) => {
                                     className="peer w-full bg-transparent border-b border-white/20 py-2 text-white placeholder-transparent focus:border-primary focus:outline-none transition-colors"
                                     placeholder="Email"
                                     id="email"
+                                    autoComplete="off"
                                     required
                                 />
                                 <label
@@ -185,6 +186,7 @@ export const LoginView = ({ onBack }) => {
                                     className="peer w-full bg-transparent border-b border-white/20 py-2 pr-10 text-white placeholder-transparent focus:border-primary focus:outline-none transition-colors"
                                     placeholder="Password"
                                     id="password"
+                                    autoComplete="new-password"
                                     required
                                 />
                                 <label
