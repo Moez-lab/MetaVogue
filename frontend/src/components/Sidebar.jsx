@@ -58,9 +58,9 @@ export const Sidebar = () => {
 
     const toolItems = [
         // { icon: "Cube", label: "Model Studio", path: "/model" },
-        { icon: "Shirt", label: "Vogue Changer", path: "/vogue-changer" },
-        { icon: "Sparkles", label: "Image Generator", path: "/image-generator" },
         { icon: "Cpu", label: "Feature Extractor", path: "/feature-extractor" },
+        { icon: "Sparkles", label: "Image Generator", path: "/image-generator" },
+        { icon: "Shirt", label: "Vogue Changer", path: "/vogue-changer" },
         { icon: "Cube", label: "2D to 3D", path: "/2d-to-3d" },
         { icon: "Video", label: "Video Gen", path: "/video" },
     ];

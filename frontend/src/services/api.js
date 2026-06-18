@@ -188,3 +188,29 @@ export const uploadFile = async (file) => {
   });
   return handleResponse(res);
 };
+
+// ==============================
+// Replicate Video Generation
+// ==============================
+
+export const generateVideo = async (imagePath, prompt, promptOptimizer = true, useSubjectReference = false) => {
+  const res = await fetch(`${API_BASE_URL}/replicate/generate-video`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ 
+      image_path: imagePath, 
+      prompt, 
+      prompt_optimizer: promptOptimizer,
+      use_subject_reference: useSubjectReference
+    })
+  });
+  return handleResponse(res);
+};
+
+export const getReplicateTaskStatus = async (id) => {
+  const res = await fetch(`${API_BASE_URL}/replicate/task/${id}`, {
+    headers: getHeaders()
+  });
+  return handleResponse(res);
+};
+

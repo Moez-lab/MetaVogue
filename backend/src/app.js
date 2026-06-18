@@ -8,6 +8,8 @@ import extractRouter from './routes/extract.js';
 import apiRouter from './routes/api.js';
 import comfyRouter from './routes/comfy.js';
 import meshyRouter from './routes/meshy.js';
+import replicateRouter from './routes/replicate.js';
+
 
 dotenv.config();
 
@@ -42,6 +44,8 @@ app.use('/api/extract', extractRouter);
 app.use('/api/comfy', comfyRouter);
 app.use('/api', apiRouter);
 app.use('/api/meshy', meshyRouter);
+app.use('/api/replicate', replicateRouter);
+
 
 // Global Error Handler for API routes
 app.use((err, req, res, next) => {
