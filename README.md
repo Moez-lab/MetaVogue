@@ -2,50 +2,107 @@
 
 ![Project Banner](https://images.unsplash.com/photo-1617791160505-6f00504e3519?q=80&w=2000&auto=format&fit=crop)
 
-> **Digitize your physical garments for neural simulation.**
-> Experience the future of fashion with AI-driven 3D model generation and texturing.
+> **Digitize your physical garments and analyze human features for neural simulation.**
+> Experience the future of fashion with AI-driven 3D model generation, texturing, and precise body feature extraction.
 
 ## ✨ Features
 
-### 👕 Upload Studio
+### 👕 Upload Studio & 3D Generation
+
 Transform your physical clothing into digital assets.
-- **Image to 3D**: Upload a photo of a shirt or garment.
+
+- **Image to 3D**: Upload a photo of a garment and let AI build the geometry.
 - **AI Processing**: Powered by **Meshy AI (v4)** for high-fidelity texture mapping.
-- **Interactive Preview**: View your generated 3D model instantly in the browser.
+- **Interactive Preview**: View your generated 3D model instantly in the browser using React Three Fiber.
 - **Export Ready**: Download in **.GLB** or **.FBX** formats for use in Blender, Unity, or Unreal Engine.
 
 ### 🎨 Texture Studio
+
 Apply AI-generated materials to any 3D model.
+
 - **Text-to-Texture**: Describe a material (e.g., "worn leather", "holographic metal") and apply it to your model.
 - **Model Support**: Upload your own `.glb` or use the generated assets.
 - **Real-time Visualization**: See changes instantly with our PBR-enabled viewer.
 
-### ⚡ Core Tech
-- **React 19**: Built on the latest React ecosystem for blazing fast performance.
-- **Three.js / React Three Fiber**: Professional-grade 3D rendering in the browser.
-- **TailwindCSS**: Sleek, modern, and responsive UI with dark mode support.
-- **Vite**: Next-generation frontend tooling.
+### 🧑‍🔬 AI Feature Extraction Studio
+
+Advanced computer vision to analyze human portraits and full-body images.
+
+- **Biometric Analysis**: Powered by MediaPipe and OpenCV to accurately extract body measurements, head poses, and body shapes.
+- **Depth-Enhanced Estimation**: Utilizes HuggingFace Transformers (`Depth-Anything-V2`) to improve measurement depth projection.
+- **Feature Recognition**: Automatically identifies hair type, eye color, emotions, and facial hair.
+
+### 🤖 LLM & RAG Integration
+
+- Natural language processing pipelines using **LangChain**, **Groq**, and **Google GenAI**.
+- Built-in RAG capabilities for document processing and intelligent querying.
+
+## ⚡ Core Tech Stack
+
+| Component             | Technology                                             |
+| --------------------- | ------------------------------------------------------ |
+| **Frontend**    | React 19, Vite, TailwindCSS, PostCSS                   |
+| **3D Engine**   | Three.js, React Three Fiber, Drei                      |
+| **Backend API** | Node.js, Express.js                                    |
+| **Database**    | MongoDB (via Docker Compose), Mongoose                 |
+| **Python AI**   | Python 3.10, OpenCV, MediaPipe, PyTorch, Transformers  |
+| **AI Services** | Meshy API, Replicate, ComfyUI, Gradio, LangChain, Groq |
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js** (v18 or higher)
 - **npm** or **yarn**
+- **Docker Desktop** (for MongoDB)
+- **Miniconda/Anaconda** (for Python Feature Extractor environment)
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/web-meta.git
    cd web-meta
    ```
+2. **Start the Database**
+   Start the local MongoDB instance using Docker:
 
-2. **Install dependencies**
+   ```bash
+   docker-compose up -d
+   ```
+3. **Automated Setup (Windows)**
+   Run the provided setup script which installs Node dependencies and creates the Conda environment:
+
+   ```bash
+   setup.bat
+   ```
+
+   *Note: For Linux/macOS, use `bash setup.sh`*
+
+### Manual Installation (If not using the setup script)
+
+1. **Install Frontend and Backend Dependencies**
+
    ```bash
    npm install
+   cd backend
+   npm install
+   cd ..
+   ```
+2. **Setup Python Environment**
+
+   ```bash
+   cd backend
+   conda create -n feature-extractor python=3.10 -y
+   conda activate feature-extractor
+   pip install -r feature-extractor/requirements.txt
+   cd ..
    ```
 
 ## ▶️ How to Run
+
+You can launch both the frontend and backend automatically on Windows using the setup script, or manually:
 
 ### Frontend
 
@@ -57,28 +114,16 @@ npm run dev
 
 Open your browser and navigate to `http://localhost:5173`.
 
----
-
 ### Backend
 
-The Express server runs on **port 3001**. Start it from the `backend/` folder:
+The Express server runs on **port 3001** and communicates with the Python feature extraction scripts.
 
 ```bash
 cd backend
+npm run start
+# OR using the batch script
 start-server.bat
 ```
-
-> **Note:** `start-server.bat` is a Windows batch script that launches the Express API. Make sure Node.js is installed and dependencies are set up before running it.
-
-## 🛠️ Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| **Frontend** | React 19, Vite |
-| **Styling** | TailwindCSS, PostCSS |
-| **3D Engine** | Three.js, React Three Fiber, Drei |
-| **AI Services** | Meshy API (v4) |
-| **Icons** | Lucide React |
 
 ## 📦 Project Structure
 
@@ -87,50 +132,28 @@ web-meta/
 │
 ├── 🎨 frontend/                    # React / Vite Application
 │   ├── public/                     # Static assets served directly
-│   │   └── temp/uploads/           # Temp folder for AI-processed images
 │   ├── src/
-│   │   ├── assets/                 # Images, logos, fonts
-│   │   ├── components/             # Reusable UI components (Sidebar, TopBar, Icon…)
+│   │   ├── components/             # Reusable UI components
 │   │   ├── context/                # Global state (GlobalContext.jsx)
-│   │   ├── services/               # API integrations (Meshy AI)
-│   │   ├── utils/                  # Helper functions
-│   │   ├── views/
-│   │   │   ├── admin/              # 🔐 Admin-only pages
-│   │   │   │   ├── HomeView.jsx
-│   │   │   │   ├── OrdersView.jsx
-│   │   │   │   ├── AdminUsersView.jsx
-│   │   │   │   ├── WorkTrackingView.jsx
-│   │   │   │   └── AnalyticsView.jsx
-│   │   │   ├── customer/           # 👤 Customer-facing pages
-│   │   │   │   ├── BrandiesView.jsx
-│   │   │   │   └── MyOrdersView.jsx
-│   │   │   ├── LandingView.jsx     # 🌐 Public landing page
-│   │   │   ├── LoginView.jsx
-│   │   │   ├── ModelStudioView.jsx # 🛠️ Shared tool pages
-│   │   │   ├── UploadStudioView.jsx
-│   │   │   ├── VideoStudioView.jsx
-│   │   │   ├── TextureStudioView.jsx
-│   │   │   ├── FeatureExtractorView.jsx
-│   │   │   └── NanoBananaView.jsx
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
+│   │   ├── services/               # API integrations
+│   │   ├── views/                  # UI Pages (Admin, Customer, Studios)
+│   │   └── App.jsx                 # Main Application Router
 │   └── index.html
 │
 ├── ⚙️ backend/                     # Express Server + Python AI
-│   ├── server/
-│   │   └── index.js                # Express API — runs on port 3001
+│   ├── src/
+│   │   ├── routes/                 # API Routes (meshy, replicate, extract, comfy)
+│   │   ├── services/               # Services (ragService.js)
+│   │   └── app.js                  # Express App configuration
 │   ├── feature-extractor/          # Python AI feature extraction scripts
-│   │   ├── feature-extraction.py
-│   │   ├── requirements.txt
-│   │   └── …
-│   └── start-server.bat            # Script to start the backend (Windows)
+│   │   ├── feature-extraction.py   # Main MediaPipe/OpenCV script
+│   │   └── requirements.txt        # Python dependencies
+│   └── server.js                   # Entry point (Port 3001)
 │
+├── docker-compose.yml              # MongoDB container configuration
+├── setup.bat / setup.sh            # Environment initialization scripts
 ├── vite.config.js                  # Vite config (root: ./frontend)
-├── package.json                    # Node dependencies (frontend + backend)
-├── postcss.config.js
-├── eslint.config.js
-└── README.md
+└── package.json                    # Monorepo dependencies
 ```
 
 ## 🤝 Contributing
@@ -148,7 +171,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-
-<p align="center">
-  Built with ❤️ by the Web Meta Team
-</p>
