@@ -1,6 +1,6 @@
 # 🌌 Web Meta: Virtual Wardrobe & Texture Studio
 
-![Project Banner](https://images.unsplash.com/photo-1617791160505-6f00504e3519?q=80&w=2000&auto=format&fit=crop)
+![Project Banner](./frontend/public/image.png)
 
 > **Digitize your physical garments and analyze human features for neural simulation.**
 > Experience the future of fashion with AI-driven 3D model generation, texturing, and precise body feature extraction.
