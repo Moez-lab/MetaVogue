@@ -1,4 +1,4 @@
-# 🌌 Web Meta: Virtual Wardrobe & Texture Studio
+# Web Meta: Virtual Wardrobe & Texture Studio
 
 ![Project Banner](./frontend/public/image.png)
 
