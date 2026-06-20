@@ -24,6 +24,14 @@ Apply AI-generated materials to any 3D model.
 - **Model Support**: Upload your own `.glb` or use the generated assets.
 - **Real-time Visualization**: See changes instantly with our PBR-enabled viewer.
 
+### 🎥 Video Studio & Motion Generation
+
+Create stunning runway animations and showcase videos from your generated fashion models.
+
+- **Text-to-Video**: Powered by Replicate and the MiniMax Video-01 model.
+- **AI Prompt Expansion**: Utilizes Gemini to automatically enhance user prompts for optimal motion and camera direction.
+- **Subject Reference**: Ensures character consistency using subject reference images.
+
 ### 🧑‍🔬 AI Feature Extraction Studio
 
 Advanced computer vision to analyze human portraits and full-body images.
