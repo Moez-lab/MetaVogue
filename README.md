@@ -1,4 +1,4 @@
-# Web Meta: Virtual Wardrobe & Texture Studio
+# MetaVogue
 
 ![Project Banner](./frontend/public/image.png)
 
