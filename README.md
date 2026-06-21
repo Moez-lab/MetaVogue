@@ -108,6 +108,20 @@ Advanced computer vision to analyze human portraits and full-body images.
    cd ..
    ```
 
+### ComfyUI Setup
+
+If you plan to use the AI Services powered by ComfyUI, you will need to download and start it locally.
+
+1. **Download ComfyUI**
+   - Visit the official [ComfyUI GitHub repository](https://github.com/comfyanonymous/ComfyUI).
+   - Scroll down to the **Installing** section and download the standalone release (e.g., for Windows).
+   - Extract the downloaded archive to a location on your computer.
+
+2. **Start ComfyUI**
+   - Navigate to the extracted ComfyUI folder.
+   - Run `run_nvidia_gpu.bat` (if you have an NVIDIA GPU) or `run_cpu.bat` to start the server.
+   - ComfyUI will start and typically run on `http://127.0.0.1:8188`. Ensure the backend is configured to communicate with this address.
+
 ## ▶️ How to Run
 
 You can launch both the frontend and backend automatically on Windows using the setup script, or manually:
